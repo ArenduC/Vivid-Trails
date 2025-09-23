@@ -1,7 +1,8 @@
 import { GoogleGenAI } from "@google/genai";
 import { TripStory, LocationPin, UploadedFile, User } from '../types';
+import { config } from '../config';
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
+const ai = new GoogleGenAI({ apiKey: config.geminiApiKey });
 
 export async function generateTripStory(files: UploadedFile[], user: User): Promise<TripStory> {
   // This function is using a mock implementation.
@@ -110,7 +111,7 @@ export async function generateTripVideo(trip: TripStory, onProgress: (message: s
         throw new Error("Video generation failed to produce a download link.");
     }
 
-    const videoResponse = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
+    const videoResponse = await fetch(`${downloadLink}&key=${config.geminiApiKey}`);
     if (!videoResponse.ok) {
         throw new Error(`Failed to download the generated video. Status: ${videoResponse.statusText}`);
     }
