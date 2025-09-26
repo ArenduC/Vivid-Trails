@@ -6,6 +6,7 @@ declare const google: any; // Use Google Maps from global scope
 interface MapViewProps {
   locations: LocationPin[];
   highlightedLocationId?: string | null;
+  onMarkerClick?: (locationId: string) => void;
 }
 
 // This style object is now for your reference.
@@ -94,23 +95,32 @@ const mapStyle = [
 ];
 
 
-const MapView: React.FC<MapViewProps> = ({ locations, highlightedLocationId }) => {
+const MapView: React.FC<MapViewProps> = ({ locations, highlightedLocationId, onMarkerClick }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
+
+  // Check if the Google Maps API script has loaded successfully.
+  if (typeof google === 'undefined' || typeof google.maps === 'undefined') {
+    return (
+      <div className="w-full h-full min-h-[400px] lg:min-h-[70vh] rounded-xl bg-gray-800 border border-dashed border-red-700/50 flex flex-col items-center justify-center text-center p-4">
+        <h3 className="text-xl font-bold text-red-300 mb-2">Map Unavailable</h3>
+        <p className="text-gray-300 max-w-sm">
+          The Google Maps API key is missing or invalid. Please add your key to the
+          <code>&lt;script&gt;</code> tag in <code>index.html</code> to enable map functionality.
+        </p>
+      </div>
+    );
+  }
 
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
 
     const map = new google.maps.Map(mapContainerRef.current, {
-        // IMPORTANT: Advanced Markers require a Map ID.
-        // Create a Map ID in your Google Cloud Console and paste it here.
-        mapId: 'YOUR_MAP_ID_HERE', 
         center: { lat: 0, lng: 0 },
         zoom: 2,
         disableDefaultUI: true,
-        // The 'styles' property is ignored when a mapId is used.
-        // Styling must be configured in the Google Cloud Console for the Map ID.
+        styles: mapStyle,
         gestureHandling: 'cooperative'
     });
     mapRef.current = map;
@@ -135,16 +145,31 @@ const MapView: React.FC<MapViewProps> = ({ locations, highlightedLocationId }) =
     locations.forEach((loc, index) => {
         const isHighlighted = loc.id === highlightedLocationId;
 
-        const markerElement = document.createElement('div');
-        markerElement.className = `custom-pin flex items-center justify-center text-white font-bold text-sm ring-4 shadow-lg rounded-full transition-all duration-300 ${isHighlighted ? 'w-8 h-8 bg-cyan-400 ring-gray-900 scale-125' : 'w-6 h-6 bg-purple-600 ring-gray-800'}`;
-        markerElement.textContent = `${index + 1}`;
-        
-        const marker = new google.maps.marker.AdvancedMarkerElement({
+        const marker = new google.maps.Marker({
             position: { lat: loc.coords.lat, lng: loc.coords.lng },
             map,
             title: loc.name,
-            content: markerElement,
+            label: {
+                text: `${index + 1}`,
+                color: 'white',
+                fontWeight: 'bold',
+            },
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: isHighlighted ? 12 : 10,
+                fillColor: isHighlighted ? '#22d3ee' : '#a855f7', // cyan-400 or purple-500
+                fillOpacity: 1,
+                strokeWeight: 4,
+                strokeColor: isHighlighted ? '#1f2937' : '#374151' // gray-800 or gray-700
+            },
+            zIndex: isHighlighted ? 100 : 1,
         });
+
+        if (onMarkerClick) {
+            marker.addListener('click', () => {
+                onMarkerClick(loc.id);
+            });
+        }
 
         markersRef.current.push(marker);
     });
@@ -175,17 +200,15 @@ const MapView: React.FC<MapViewProps> = ({ locations, highlightedLocationId }) =
     if (latLngs.length > 0) {
       map.fitBounds(bounds, 80); // 80px padding
 
-      // Add a one-time listener to ensure the zoom level is not too close,
-      // providing a state-level overview.
       google.maps.event.addListenerOnce(map, 'idle', () => {
         const currentZoom = map.getZoom();
-        const STATE_LEVEL_ZOOM = 9; // Approx. zoom for viewing a state
+        const STATE_LEVEL_ZOOM = 9;
         if (currentZoom > STATE_LEVEL_ZOOM) {
           map.setZoom(STATE_LEVEL_ZOOM);
         }
       });
     }
-  }, [locations, highlightedLocationId]);
+  }, [locations, highlightedLocationId, onMarkerClick]);
 
   return <div ref={mapContainerRef} className="w-full h-full min-h-[400px] lg:min-h-[70vh] rounded-xl bg-gray-700" />;
 };

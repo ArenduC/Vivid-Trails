@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { TripStory, CameraDetails, User } from '../types';
+import React, { useState, useRef, useImperativeHandle, forwardRef } from 'react';
+import { TripStory, User, Comment } from '../types';
 import { RouteIcon, CameraIcon, PlusIcon, HeartIcon, ChatBubbleIcon } from './IconComponents';
+import CommentSection from './CommentSection';
 
 interface ItineraryDisplayProps {
   trip: TripStory;
@@ -11,6 +12,12 @@ interface ItineraryDisplayProps {
   onPhotoDescriptionChange: (photoId: string, description: string) => void;
   onAddPhotos: () => void;
   onUpdateTrip: (updatedTrip: TripStory) => void; // For handling likes/comments
+  onPhotoClick: (photoId: string) => void;
+  mode: 'detail' | 'preview';
+}
+
+export interface ItineraryDisplayHandle {
+    scrollToLocation: (locationId: string) => void;
 }
 
 const PhotoSocialActions: React.FC<{photoId: string; trip: TripStory; currentUser: User; onUpdateTrip: (trip: TripStory)=>void; onCommentClick: ()=>void}> = 
@@ -48,46 +55,126 @@ const PhotoSocialActions: React.FC<{photoId: string; trip: TripStory; currentUse
     )
 }
 
-const ItineraryDisplay: React.FC<ItineraryDisplayProps> = ({ trip, isEditing, onPhotoHover, onLocationChange, onPhotoDescriptionChange, onAddPhotos, currentUser, onUpdateTrip }) => {
-  const [visibleCameraDetailsId, setVisibleCameraDetailsId] = useState<string | null>(null);
+const ItineraryDisplay = forwardRef<ItineraryDisplayHandle, ItineraryDisplayProps>(({ trip, isEditing, onPhotoHover, onLocationChange, onPhotoDescriptionChange, onAddPhotos, currentUser, onUpdateTrip, onPhotoClick, mode }, ref) => {
   const [activeCommentSectionId, setActiveCommentSectionId] = useState<string | null>(null);
+  const locationRefs = useRef(new Map<string, HTMLDivElement>());
+
+  useImperativeHandle(ref, () => ({
+      scrollToLocation(locationId: string) {
+          const element = locationRefs.current.get(locationId);
+          element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+  }));
+
+  const handleAddPhotoComment = (photoId: string, content: string) => {
+    const updatedTrip = { ...trip };
+    const targetPhoto = updatedTrip.files.find(f => f.id === photoId);
+    if (!targetPhoto || !currentUser) return;
+
+    const newComment: Comment = {
+      id: crypto.randomUUID(),
+      user: currentUser,
+      content,
+      createdAt: new Date().toISOString(),
+    };
+    targetPhoto.comments.push(newComment);
+    onUpdateTrip(updatedTrip);
+  };
+
+  const handleDeletePhotoComment = (photoId: string, commentId: string) => {
+    const updatedTrip = { ...trip };
+    const targetPhoto = updatedTrip.files.find(f => f.id === photoId);
+    if (!targetPhoto) return;
+
+    targetPhoto.comments = targetPhoto.comments.filter(c => c.id !== commentId);
+    onUpdateTrip(updatedTrip);
+  };
+
 
   return (
     <div className="bg-gray-800/50 p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-700 h-full">
-      <div className="flex items-center justify-between mb-4">
-        {/* Header remains the same */}
-      </div>
-      <div className="space-y-6 max-h-[70vh] overflow-y-auto pr-2">
+      {isEditing && (
+        <div className="mb-4">
+            <button 
+                onClick={onAddPhotos} 
+                className="w-full flex items-center justify-center gap-2 bg-purple-600/20 hover:bg-purple-600/40 border border-purple-500/50 text-purple-300 font-bold py-2 px-4 rounded-lg transition-colors"
+            >
+                <PlusIcon className="w-5 h-5"/>
+                Add More Photos
+            </button>
+        </div>
+      )}
+      <div className="space-y-6 max-h-[70vh] overflow-y-auto pr-2 pl-4">
         {trip.locations.map((loc, index) => {
           const locationPhotos = trip.files.filter(file => loc.photoIds.includes(file.id));
           return (
-            <div key={loc.id} className="relative pl-8">
-              {/* Pin and line rendering remains the same */}
-              <div className="absolute left-0 top-1 flex items-center justify-center w-6 h-6 bg-purple-600 rounded-full text-white font-bold text-sm ring-4 ring-gray-800">
+            <div 
+                key={loc.id} 
+                ref={el => {
+                    if (el) locationRefs.current.set(loc.id, el);
+                    else locationRefs.current.delete(loc.id);
+                }}
+                className="relative pl-3 border-l border-dashed border-gray-600 last:border-transparent"
+            >
+              <div className="absolute left-[-13px] top-1 flex items-center justify-center w-6 h-6 bg-purple-600 rounded-full text-white font-bold text-sm ring-4 ring-gray-900">
                 {index + 1}
               </div>
-              <h4 className="font-semibold text-white">{loc.name}</h4>
-              <p className="text-gray-300 text-sm mt-1">{loc.story}</p>
+              <div className="ml-8 pb-6">
+                <h4 className="font-semibold text-white -mt-1">{loc.name}</h4>
+                <p className="text-gray-300 text-sm mt-1">{loc.story}</p>
 
-              {locationPhotos.length > 0 && (
-                <div className="mt-4 grid grid-cols-3 gap-2" onMouseLeave={() => onPhotoHover(null)}>
-                  {locationPhotos.map(photo => (
-                    <div key={photo.id} onMouseEnter={() => onPhotoHover(loc.id)}>
-                      <div className="aspect-square rounded-md overflow-hidden group cursor-pointer relative">
-                        <img src={photo.previewUrl} alt={photo.file.name} className="w-full h-full object-cover"/>
-                      </div>
-                      <PhotoSocialActions photoId={photo.id} trip={trip} currentUser={currentUser} onUpdateTrip={onUpdateTrip} onCommentClick={() => setActiveCommentSectionId(activeCommentSectionId === photo.id ? null : photo.id)} />
-                      {/* Comment section would be conditionally rendered here based on activeCommentSectionId */}
-                    </div>
-                  ))}
-                </div>
-              )}
+                {locationPhotos.length > 0 && (
+                  <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-2" onMouseLeave={() => onPhotoHover(null)}>
+                    {locationPhotos.map(photo => (
+                      <React.Fragment key={photo.id}>
+                        <div onMouseEnter={() => onPhotoHover(loc.id)}>
+                          <div className="aspect-square rounded-md overflow-hidden group cursor-pointer relative" onClick={() => onPhotoClick(photo.id)}>
+                            <img 
+                              src={photo.previewUrl} 
+                              alt={photo.file?.name || `A photo from ${loc.name}`} 
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                  (e.target as HTMLImageElement).src = `https://picsum.photos/seed/${photo.id}/200/200`;
+                                  (e.target as HTMLImageElement).onerror = null; // Prevent infinite loop
+                              }}
+                            />
+                          </div>
+                          {mode === 'detail' && (
+                            <PhotoSocialActions 
+                                photoId={photo.id} 
+                                trip={trip} 
+                                currentUser={currentUser} 
+                                onUpdateTrip={onUpdateTrip} 
+                                onCommentClick={() => setActiveCommentSectionId(activeCommentSectionId === photo.id ? null : photo.id)} 
+                            />
+                          )}
+                        </div>
+
+                        {activeCommentSectionId === photo.id && mode === 'detail' && (
+                          <div className="col-span-2 sm:col-span-3">
+                            <CommentSection
+                              title="Photo Comments"
+                              comments={photo.comments}
+                              currentUser={currentUser}
+                              onAddComment={(content) => handleAddPhotoComment(photo.id, content)}
+                              onDeleteComment={(commentId) => handleDeletePhotoComment(photo.id, commentId)}
+                              placeholder="Add a comment..."
+                            />
+                          </div>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           );
         })}
       </div>
     </div>
   );
-};
+});
+
+ItineraryDisplay.displayName = 'ItineraryDisplay';
 
 export default ItineraryDisplay;

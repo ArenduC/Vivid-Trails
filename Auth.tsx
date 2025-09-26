@@ -1,44 +1,29 @@
 
 import React, { useState } from 'react';
-import { SparklesIcon, MapPinIcon } from './components/IconComponents';
+import { MapPinIcon } from './components/IconComponents';
 
 interface AuthProps {
     onLogin: (email: string, pass: string) => Promise<string | null>;
-    onSendOtp: (email: string) => Promise<string | null>;
-    onVerifyAndRegister: (email: string, token: string, username: string) => Promise<string | null>;
+    onRegister: (email: string, pass: string, username: string) => Promise<string | null>;
+    onResendConfirmation: (email: string) => Promise<string | null>;
     initialError?: string | null;
 }
 
-const Auth: React.FC<AuthProps> = ({ onLogin, onSendOtp, onVerifyAndRegister, initialError }) => {
+const Auth: React.FC<AuthProps> = ({ onLogin, onRegister, onResendConfirmation, initialError }) => {
     const [isLoginView, setIsLoginView] = useState(true);
-    const [regStep, setRegStep] = useState<'enter-email' | 'enter-otp'>('enter-email');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [username, setUsername] = useState('');
-    const [otp, setOtp] = useState('');
     const [error, setError] = useState(initialError || '');
     const [message, setMessage] = useState('');
-
-    const handleSendOtp = async () => {
-        setError('');
-        setMessage('');
-        if (!email) {
-            setError('Please enter your email address.');
-            return;
-        }
-        const apiError = await onSendOtp(email);
-        if (apiError) {
-            setError(apiError);
-        } else {
-            setMessage(`A confirmation code has been sent to ${email}. Check your inbox!`);
-            setRegStep('enter-otp');
-        }
-    };
+    const [isSubmitted, setIsSubmitted] = useState(false);
+    const [showResend, setShowResend] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         setMessage('');
+        setShowResend(false);
 
         if (isLoginView) {
             if (!email || !password) {
@@ -46,32 +31,60 @@ const Auth: React.FC<AuthProps> = ({ onLogin, onSendOtp, onVerifyAndRegister, in
                 return;
             }
             const apiError = await onLogin(email, password);
-            if (apiError) setError(apiError);
+            if (apiError) {
+                setError(apiError);
+                if (apiError.toLowerCase().includes('email not confirmed')) {
+                    setShowResend(true);
+                }
+            }
         } else { // Registration flow
-            if(regStep === 'enter-otp') {
-                if (!otp || !username) {
-                    setError('Please fill in all fields.');
-                    return;
-                }
-                if(username.length < 3) {
-                    setError('Username must be at least 3 characters.');
-                    return;
-                }
-                const apiError = await onVerifyAndRegister(email, otp, username);
-                if (apiError) setError(apiError);
+            if (!email || !password || !username) {
+                setError('Please fill in all fields.');
+                return;
+            }
+            if(username.length < 3) {
+                setError('Username must be at least 3 characters.');
+                return;
+            }
+            if (password.length < 6) {
+                setError('Password must be at least 6 characters long.');
+                return;
+            }
+            const apiError = await onRegister(email, password, username);
+            if (apiError) {
+                setError(apiError);
+            } else {
+                setMessage('Success! Please check your email to confirm your account.');
+                setIsSubmitted(true);
             }
         }
+    };
+
+    const handleResend = async () => {
+        if (!email) {
+            setError('Please enter your email address above to resend the link.');
+            return;
+        }
+        setError('');
+        setMessage('');
+        const apiError = await onResendConfirmation(email);
+        if (apiError) {
+            setError(apiError);
+        } else {
+            setMessage('A new confirmation link has been sent to your email.');
+        }
+        setShowResend(false);
     };
 
     const toggleView = () => {
         setIsLoginView(!isLoginView);
         setError('');
         setMessage('');
-        setRegStep('enter-email');
         setEmail('');
         setPassword('');
         setUsername('');
-        setOtp('');
+        setIsSubmitted(false);
+        setShowResend(false);
     };
     
     return (
@@ -87,69 +100,76 @@ const Auth: React.FC<AuthProps> = ({ onLogin, onSendOtp, onVerifyAndRegister, in
                     </div>
                     <p className="text-gray-300">{isLoginView ? 'Welcome back.' : 'Share your journey. Discover the world.'}</p>
                 </div>
+                
+                {isSubmitted ? (
+                     <div className="text-center p-6 bg-green-900/50 rounded-lg border border-green-700">
+                        <h3 className="font-bold text-lg text-white">Registration Submitted!</h3>
+                        <p className="mt-2 text-green-300">{message}</p>
+                    </div>
+                ) : (
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        {isLoginView ? (
+                            <>
+                                <div>
+                                    <label className="text-sm font-bold text-gray-300 block mb-2" htmlFor="email">Email</label>
+                                    <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:ring-2 focus:ring-purple-500 focus:outline-none" placeholder="you@example.com" />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-bold text-gray-300 block mb-2" htmlFor="password">Password</label>
+                                    <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:ring-2 focus:ring-purple-500 focus:outline-none" placeholder="••••••••" />
+                                </div>
+                                <button type="submit" className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105 shadow-lg">
+                                    Log In
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <div>
+                                    <label className="text-sm font-bold text-gray-300 block mb-2" htmlFor="email-reg">Email</label>
+                                    <input id="email-reg" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:ring-2 focus:ring-purple-500 focus:outline-none" placeholder="you@example.com" required />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-bold text-gray-300 block mb-2" htmlFor="username">Username</label>
+                                    <input id="username" type="text" value={username} onChange={(e) => setUsername(e.target.value)} className="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:ring-2 focus:ring-purple-500 focus:outline-none" placeholder="e.g., world_traveler" required />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-bold text-gray-300 block mb-2" htmlFor="password-reg">Password</label>
+                                    <input id="password-reg" type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:ring-2 focus:ring-purple-500 focus:outline-none" placeholder="••••••••" required />
+                                </div>
+                                <button type="submit" className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105 shadow-lg">
+                                    Create Account
+                                </button>
+                            </>
+                        )}
+                        
+                        {(error || message) && (
+                            <div className="text-center pt-4">
+                                {error && <p className="text-sm text-red-400">{error}</p>}
+                                {message && <p className="text-sm text-green-300">{message}</p>}
+                            </div>
+                        )}
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    {isLoginView ? (
-                        <>
-                            <div>
-                                <label className="text-sm font-bold text-gray-300 block mb-2" htmlFor="email">Email</label>
-                                <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:ring-2 focus:ring-purple-500 focus:outline-none" placeholder="you@example.com" />
+                        {showResend && (
+                            <div className="text-center pt-2">
+                                <button 
+                                    type="button" 
+                                    onClick={handleResend}
+                                    className="text-sm font-semibold text-purple-400 hover:text-purple-300"
+                                >
+                                    Resend confirmation link?
+                                </button>
                             </div>
-                             <div>
-                                <label className="text-sm font-bold text-gray-300 block mb-2" htmlFor="password">Password</label>
-                                <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:ring-2 focus:ring-purple-500 focus:outline-none" placeholder="••••••••" />
-                            </div>
-                            <button type="submit" className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105 shadow-lg">
-                                Log In
-                            </button>
-                        </>
-                    ) : regStep === 'enter-email' ? (
-                        <>
-                            <div>
-                                <label className="text-sm font-bold text-gray-300 block mb-2" htmlFor="email-reg">Email</label>
-                                <input id="email-reg" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:ring-2 focus:ring-purple-500 focus:outline-none" placeholder="you@example.com" />
-                            </div>
-                            <button type="button" onClick={handleSendOtp} className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105 shadow-lg">
-                                Send Confirmation Code
-                            </button>
-                        </>
-                    ) : (
-                        <>
-                             <div>
-                                <label className="text-sm font-bold text-gray-300 block mb-2" htmlFor="email-verify">Email</label>
-                                <input id="email-verify" type="email" value={email} disabled className="w-full p-3 bg-gray-900/50 rounded-lg border border-gray-600 text-gray-400" />
-                            </div>
-                            <div>
-                                <label className="text-sm font-bold text-gray-300 block mb-2" htmlFor="username">Username</label>
-                                <input id="username" type="text" value={username} onChange={(e) => setUsername(e.target.value)} className="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:ring-2 focus:ring-purple-500 focus:outline-none" placeholder="e.g., world_traveler" />
-                            </div>
-                             <div>
-                                <label className="text-sm font-bold text-gray-300 block mb-2" htmlFor="otp">Confirmation Code</label>
-                                <input id="otp" type="text" value={otp} onChange={(e) => setOtp(e.target.value)} className="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:ring-2 focus:ring-purple-500 focus:outline-none" placeholder="123456" />
-                            </div>
-                            <button type="submit" className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105 shadow-lg">
-                                Create Account
-                            </button>
-                        </>
-                    )}
-                    
-                    {error && <p className="text-sm text-red-400 text-center">{error}</p>}
-                    {message && <p className="text-sm text-green-400 text-center">{message}</p>}
+                        )}
 
-                </form>
+                    </form>
+                )}
+
 
                 <div className="text-center mt-6">
                     <button onClick={toggleView} className="text-sm text-purple-400 hover:text-purple-300">
                         {isLoginView ? 'Need an account? Sign up' : 'Already have an account? Log in'}
                     </button>
                 </div>
-                 {!isLoginView && regStep === 'enter-otp' &&
-                    <div className="text-center mt-4">
-                        <button type="button" onClick={handleSendOtp} className="text-xs text-gray-400 hover:text-gray-200">
-                            Didn't get a code? Resend
-                        </button>
-                    </div>
-                }
             </div>
         </div>
     );
