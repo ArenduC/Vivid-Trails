@@ -1,7 +1,8 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { TripStory, LocationPin, UploadedFile, User } from '../types';
+import { GEMINI_API_KEY } from '../config';
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 const responseSchema = {
   type: Type.OBJECT,
@@ -303,7 +304,7 @@ export async function generateTripVideo(trip: TripStory, onProgress: (message: s
     }
     
     // We must append the API key to the download link provided by the VEO API
-    const videoResponse = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
+    const videoResponse = await fetch(`${downloadLink}&key=${GEMINI_API_KEY}`);
     if (!videoResponse.ok) {
         const errorBody = await videoResponse.text();
         console.error("Video download failed:", errorBody);
