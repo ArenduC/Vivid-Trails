@@ -1,5 +1,4 @@
 
-
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { UploadedFile, TripStory, CameraDetails, LocationPin, User, Comment, Rating, Profile, Competition, CompetitionEntry } from './types';
 import { generateTripStory, generateTripVideo, addPhotosToTripStory } from './services/geminiService';
@@ -16,6 +15,34 @@ import LibraryImagePicker from './components/Gallery';
 import ProfilePage from './components/ProfilePage';
 
 declare const EXIF: any;
+
+// --- DATE HELPERS ---
+const parseUTCDate = (dateString: string): Date => {
+    // This function now robustly handles both 'YYYY-MM-DD' and full ISO date strings.
+    if (typeof dateString !== 'string' || !dateString) {
+        console.warn('Invalid date string provided (not a string or empty):', dateString);
+        return new Date(0);
+    }
+    
+    // Take just the date part (first 10 characters) to handle formats like '2024-07-26T00:00:00+00:00'.
+    const datePart = dateString.substring(0, 10);
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(datePart)) {
+        console.warn('Invalid date string format provided to parseUTCDate:', dateString);
+        return new Date(0); // Return epoch for invalid strings to avoid crashes
+    }
+    const [year, month, day] = datePart.split('-').map(Number);
+    // Create a new Date object from the UTC timestamp.
+    return new Date(Date.UTC(year, month - 1, day));
+};
+
+const getLocalDateISOString = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
 
 // --- EXIF HELPERS ---
 const toDecimal = (gpsData: number[], ref: string): number => {
@@ -602,7 +629,13 @@ const CreateCompetitionModal: React.FC<{
 }> = ({ onClose, onCreate }) => {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const [endDate, setEndDate] = useState('');
+    
+    const getTomorrow = () => {
+        const d = new Date();
+        d.setDate(d.getDate() + 1);
+        return d;
+    }
+    const [endDate, setEndDate] = useState(getLocalDateISOString(getTomorrow()));
     const [maxEntries, setMaxEntries] = useState(1);
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -629,7 +662,7 @@ const CreateCompetitionModal: React.FC<{
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="text-sm font-bold text-gray-300 block mb-2" htmlFor="comp-end-date">Submission Deadline</label>
-                                <input id="comp-end-date" type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:ring-2 focus:ring-purple-500 focus:outline-none" required />
+                                <input id="comp-end-date" type="date" value={endDate} onChange={e => setEndDate(e.target.value)} min={getLocalDateISOString(new Date())} className="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:ring-2 focus:ring-purple-500 focus:outline-none" required />
                             </div>
                              <div>
                                 <label className="text-sm font-bold text-gray-300 block mb-2" htmlFor="comp-max-entries">Max Entries Per User</label>
@@ -683,7 +716,7 @@ const CompetitionListPage: React.FC<{
                                     </div>
                                     <div className="text-right">
                                         <p className="text-xs text-gray-400">Ends On</p>
-                                        <p className="font-semibold text-sm text-white">{new Date(comp.endDate).toLocaleDateString()}</p>
+                                        <p className="font-semibold text-sm text-white">{parseUTCDate(comp.endDate).toLocaleDateString(undefined, { timeZone: 'UTC' })}</p>
                                     </div>
                                 </div>
                             </div>
@@ -722,7 +755,10 @@ const CompetitionDetailPage: React.FC<{
         onSubmit(file);
     };
 
-    const isCompetitionActive = new Date(competition.endDate) > new Date();
+    const deadline = parseUTCDate(competition.endDate);
+    deadline.setUTCHours(23, 59, 59, 999); // Competition ends at the end of the specified day in UTC.
+    const isCompetitionActive = deadline > new Date();
+
     const userEntries = entries.filter(e => e.user.id === currentUser.id);
     const canSubmit = isCompetitionActive && userEntries.length < competition.maxEntriesPerUser;
     const isCreator = currentUser.id === competition.creator.id;
@@ -741,7 +777,7 @@ const CompetitionDetailPage: React.FC<{
                         <span className="font-semibold text-gray-300 group-hover/user:text-purple-400 transition-colors">Hosted by {competition.creator.username}</span>
                     </div>
                     <p className="max-w-2xl mx-auto text-lg text-gray-300">{competition.description}</p>
-                    <div className="text-sm text-gray-400">Submission Deadline: {new Date(competition.endDate).toLocaleString()}</div>
+                    <div className="text-sm text-gray-400">Submission Deadline: {parseUTCDate(competition.endDate).toLocaleDateString(undefined, { timeZone: 'UTC', year: 'numeric', month: 'long', day: 'numeric' })}</div>
                 </div>
             </div>
 
@@ -977,16 +1013,46 @@ const App: React.FC = () => {
                 setLoadingMessage('Loading competitions...');
                 const { data, error: compError } = await supabase.from('competitions').select('*, creator:profiles(id, username, avatar_url)').order('created_at', { ascending: false });
                 if (compError) throw compError;
-                setCompetitions(data.map((c: any) => ({ ...c, creator: c.creator[0] || c.creator })));
+                const mappedCompetitions: Competition[] = data.map((c: any) => ({
+                    id: c.id,
+                    creatorId: c.creator_id,
+                    title: c.title,
+                    description: c.description,
+                    endDate: c.end_date,
+                    maxEntriesPerUser: c.max_entries_per_user,
+                    createdAt: c.created_at,
+                    creator: Array.isArray(c.creator) ? c.creator[0] : c.creator,
+                }));
+                setCompetitions(mappedCompetitions);
             } else if (viewState.view === 'competition_detail') {
                  setLoadingMessage('Loading competition details...');
                 const { data: compData, error: compError } = await supabase.from('competitions').select('*, creator:profiles(id, username, avatar_url)').eq('id', viewState.id).single();
                 if (compError) throw compError;
-                setCurrentCompetition({ ...compData, creator: compData.creator[0] || compData.creator });
+                const creatorObject = Array.isArray(compData.creator) ? compData.creator[0] : compData.creator;
+                const mappedCompetition: Competition = {
+                    id: compData.id,
+                    creatorId: compData.creator_id,
+                    title: compData.title,
+                    description: compData.description,
+                    endDate: compData.end_date,
+                    maxEntriesPerUser: compData.max_entries_per_user,
+                    createdAt: compData.created_at,
+                    creator: creatorObject,
+                };
+                setCurrentCompetition(mappedCompetition);
 
                 const { data: entriesData, error: entriesError } = await supabase.from('competition_entries').select('*, user:profiles(id, username, avatar_url)').eq('competition_id', viewState.id).order('submitted_at', { ascending: false });
                 if (entriesError) throw entriesError;
-                setCompetitionEntries(entriesData.map((e: any) => ({ ...e, user: e.user[0] || e.user })));
+                 const mappedEntries: CompetitionEntry[] = entriesData.map((e: any) => ({
+                    id: e.id,
+                    competitionId: e.competition_id,
+                    photoUrl: e.photo_url,
+                    submittedAt: e.submitted_at,
+                    rank: e.rank,
+                    votes: e.votes || [],
+                    user: Array.isArray(e.user) ? e.user[0] : e.user,
+                }));
+                setCompetitionEntries(mappedEntries);
             }
         } catch (e) {
             setError({
