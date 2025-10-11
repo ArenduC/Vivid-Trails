@@ -43,11 +43,11 @@ const PhotoSocialActions: React.FC<{photoId: string; trip: TripStory; currentUse
 
     return (
         <div className="flex items-center gap-4 mt-2">
-            <button onClick={handleLike} className="flex items-center gap-1.5 text-gray-400 hover:text-white transition-colors">
+            <button onClick={handleLike} className="flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors">
                 <HeartIcon className={`w-5 h-5 ${hasLiked ? 'text-red-500 fill-current' : ''}`} />
                 <span className="text-xs">{photo.likes.length}</span>
             </button>
-             <button onClick={onCommentClick} className="flex items-center gap-1.5 text-gray-400 hover:text-white transition-colors">
+             <button onClick={onCommentClick} className="flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors">
                 <ChatBubbleIcon className="w-5 h-5" />
                 <span className="text-xs">{photo.comments.length}</span>
             </button>
@@ -92,12 +92,12 @@ const ItineraryDisplay = forwardRef<ItineraryDisplayHandle, ItineraryDisplayProp
 
 
   return (
-    <div className="bg-gray-800/50 p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-700 h-full">
+    <div className="bg-slate-800/60 p-4 sm:p-6 rounded-2xl shadow-lg border border-slate-700 h-full">
       {isEditing && (
         <div className="mb-4">
             <button 
                 onClick={onAddPhotos} 
-                className="w-full flex items-center justify-center gap-2 bg-purple-600/20 hover:bg-purple-600/40 border border-purple-500/50 text-purple-300 font-bold py-2 px-4 rounded-lg transition-colors"
+                className="w-full flex items-center justify-center gap-2 bg-yellow-600/20 hover:bg-yellow-600/40 border border-yellow-500/50 text-yellow-300 font-bold py-2 px-4 rounded-lg transition-colors"
             >
                 <PlusIcon className="w-5 h-5"/>
                 Add More Photos
@@ -114,14 +114,14 @@ const ItineraryDisplay = forwardRef<ItineraryDisplayHandle, ItineraryDisplayProp
                     if (el) locationRefs.current.set(loc.id, el);
                     else locationRefs.current.delete(loc.id);
                 }}
-                className="relative pl-3 border-l border-dashed border-gray-600 last:border-transparent"
+                className="relative pl-3 border-l border-dashed border-slate-600 last:border-transparent"
             >
-              <div className="absolute left-[-13px] top-1 flex items-center justify-center w-6 h-6 bg-purple-600 rounded-full text-white font-bold text-sm ring-4 ring-gray-900">
+              <div className="absolute left-[-13px] top-1 flex items-center justify-center w-6 h-6 bg-yellow-600 rounded-full text-white font-bold text-sm ring-4 ring-slate-900">
                 {index + 1}
               </div>
               <div className="ml-8 pb-6">
                 <h4 className="font-semibold text-white -mt-1">{loc.name}</h4>
-                <p className="text-gray-300 text-sm mt-1">{loc.story}</p>
+                <p className="text-slate-300 text-sm mt-1">{loc.story}</p>
 
                 {locationPhotos.length > 0 && (
                   <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-2" onMouseLeave={() => onPhotoHover(null)}>

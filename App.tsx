@@ -1,4 +1,5 @@
 
+
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { UploadedFile, TripStory, CameraDetails, LocationPin, User, Comment, Rating, Profile, Competition, CompetitionEntry } from './types';
 import { generateTripStory, generateTripVideo, addPhotosToTripStory } from './services/geminiService';
@@ -13,6 +14,7 @@ import { PlusIcon, ArrowLeftIcon, SparklesIcon, PencilIcon, CheckIcon, XMarkIcon
 import CommentSection from './components/CommentSection';
 import LibraryImagePicker from './components/Gallery';
 import ProfilePage from './components/ProfilePage';
+import BottomNavBar from './components/BottomNavBar';
 
 declare const EXIF: any;
 
@@ -93,7 +95,7 @@ const StarRatingDisplay: React.FC<{ ratings: Rating[], className?: string }> = (
         <div className={`flex items-center gap-1 flex-shrink-0 ${className}`}>
             <StarIcon className="w-4 h-4 text-yellow-400" filled />
             <span className="text-sm font-bold text-white">{averageRating.toFixed(1)}</span>
-            <span className="text-xs text-gray-400">({ratings.length})</span>
+            <span className="text-xs text-slate-400">({ratings.length})</span>
         </div>
     );
 };
@@ -121,27 +123,27 @@ const PhotoModal: React.FC<{ photo: UploadedFile; onClose: () => void }> = ({ ph
                       }}
                     />
                 </div>
-                <div className="lg:w-80 bg-gray-800/50 p-6 rounded-2xl border border-gray-700 text-white flex-shrink-0 w-full lg:max-w-sm">
+                <div className="lg:w-80 bg-slate-800/50 p-6 rounded-2xl border border-slate-700 text-white flex-shrink-0 w-full lg:max-w-sm">
                     <h3 className="text-xl font-bold mb-1">Photo Details</h3>
-                    {photo.description && <p className="text-gray-300 mb-4">{photo.description}</p>}
+                    {photo.description && <p className="text-slate-300 mb-4">{photo.description}</p>}
                     
                     {availableDetails.length > 0 && (
                         <div className="space-y-3">
                             {availableDetails.map(({ Icon, value, label }) => (
                                 <div key={label} className="flex items-center gap-3">
-                                    <div className="bg-gray-700 p-2 rounded-full">
-                                        <Icon className="w-5 h-5 text-purple-400" />
+                                    <div className="bg-slate-700 p-2 rounded-full">
+                                        <Icon className="w-5 h-5 text-yellow-400" />
                                     </div>
                                     <div>
                                         <p className="font-semibold text-sm leading-tight">{value}</p>
-                                        <p className="text-xs text-gray-400 leading-tight">{label}</p>
+                                        <p className="text-xs text-slate-400 leading-tight">{label}</p>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     )}
                 </div>
-                <button onClick={onClose} className="absolute top-4 right-4 text-white bg-gray-800/50 rounded-full p-2 hover:bg-gray-700" aria-label="Close photo view">
+                <button onClick={onClose} className="absolute top-4 right-4 text-white bg-slate-800/50 rounded-full p-2 hover:bg-slate-700" aria-label="Close photo view">
                     <XMarkIcon className="w-6 h-6" />
                 </button>
             </div>
@@ -151,7 +153,7 @@ const PhotoModal: React.FC<{ photo: UploadedFile; onClose: () => void }> = ({ ph
 
 
 const TripCard: React.FC<{ trip: TripStory; onClick: () => void; onUserClick: (userId: string) => void; currentUser: User | null }> = ({ trip, onClick, onUserClick, currentUser }) => (
-  <div className="bg-gray-800/50 rounded-2xl overflow-hidden border border-gray-700 shadow-lg group transform transition-all duration-300 hover:shadow-purple-500/20 hover:-translate-y-1">
+  <div className="bg-slate-800/60 rounded-2xl overflow-hidden border border-slate-700 shadow-lg group transform transition-all duration-300 hover:shadow-yellow-500/20 hover:-translate-y-1">
     <div onClick={onClick} className="cursor-pointer">
       <div className="aspect-video overflow-hidden relative">
         <img 
@@ -166,18 +168,18 @@ const TripCard: React.FC<{ trip: TripStory; onClick: () => void; onUserClick: (u
       </div>
       <div className="p-4 sm:p-5">
         <div className="flex justify-between items-start gap-2">
-            <h3 className="text-xl font-bold text-white truncate group-hover:text-purple-400 transition-colors flex-1">{trip.title}</h3>
+            <h3 className="text-xl font-bold text-white truncate group-hover:text-yellow-400 transition-colors flex-1">{trip.title}</h3>
             <StarRatingDisplay ratings={trip.ratings} />
         </div>
-        <p className="text-gray-400 text-sm mt-2 line-clamp-2">{trip.summary}</p>
+        <p className="text-slate-400 text-sm mt-2 line-clamp-2">{trip.summary}</p>
       </div>
     </div>
-    <div className="px-5 pb-4 border-t border-gray-700/50 flex justify-between items-center">
+    <div className="px-5 pb-4 border-t border-slate-700/50 flex justify-between items-center">
         <div onClick={(e) => { e.stopPropagation(); onUserClick(trip.user.id); }} className="flex items-center gap-2 cursor-pointer group/user">
             <img src={trip.user.avatarUrl} alt={trip.user.username} className="w-8 h-8 rounded-full"/>
-            <span className="text-sm font-semibold text-gray-300 group-hover/user:text-purple-400 transition-colors">{trip.user.username}</span>
+            <span className="text-sm font-semibold text-slate-300 group-hover/user:text-yellow-400 transition-colors">{trip.user.username}</span>
         </div>
-        <div className="flex items-center gap-4 text-gray-400">
+        <div className="flex items-center gap-4 text-slate-400">
             <div className="flex items-center gap-1.5">
                 <HeartIcon className={`w-5 h-5 ${currentUser && trip.likes.some(l => l.userId === currentUser.id) ? 'text-red-500 fill-current' : ''}`}/>
                 <span className="text-sm">{trip.likes.length}</span>
@@ -195,9 +197,9 @@ const ExplorePage: React.FC<{ trips: TripStory[]; onSelectTrip: (id: string) => 
     <div>
         <h1 className="text-3xl font-bold mb-8">Explore All Trips</h1>
         {trips.length === 0 ? (
-            <div className="text-center py-20 px-8 bg-gray-800/50 rounded-2xl border border-dashed border-gray-700">
+            <div className="text-center py-20 px-8 bg-slate-800/60 rounded-2xl border border-dashed border-slate-700">
                 <h2 className="text-2xl font-bold text-white mb-2">The World is Quiet... For Now</h2>
-                <p className="text-gray-400 mb-6 max-w-md mx-auto">No trips have been shared by other users yet. Be the first to explore and create a trip!</p>
+                <p className="text-slate-400 mb-6 max-w-md mx-auto">No trips have been shared by other users yet. Be the first to explore and create a trip!</p>
             </div>
         ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -212,10 +214,10 @@ const ExplorePage: React.FC<{ trips: TripStory[]; onSelectTrip: (id: string) => 
 
 const VideoPlayerModal: React.FC<{ videoUrl: string; onClose: () => void; tripTitle: string; }> = ({ videoUrl, onClose, tripTitle }) => (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="video-modal-title">
-        <div className="bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden border border-gray-700" onClick={e => e.stopPropagation()}>
-            <div className="p-4 flex justify-between items-center border-b border-gray-700">
+        <div className="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden border border-slate-700" onClick={e => e.stopPropagation()}>
+            <div className="p-4 flex justify-between items-center border-b border-slate-700">
                 <h3 id="video-modal-title" className="text-lg font-bold text-white">{tripTitle} - Highlight Reel</h3>
-                <button onClick={onClose} className="text-gray-400 hover:text-white" aria-label="Close video player">
+                <button onClick={onClose} className="text-slate-400 hover:text-white" aria-label="Close video player">
                     <XMarkIcon className="w-6 h-6" />
                 </button>
             </div>
@@ -236,21 +238,21 @@ interface PhotoSourceModalProps {
 
 const PhotoSourceModal: React.FC<PhotoSourceModalProps> = ({ onClose, onUploadFromDevice, onSelectFromLibrary }) => (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
-        <div className="bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-gray-700" onClick={e => e.stopPropagation()}>
-            <div className="p-5 border-b border-gray-700">
+        <div className="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-700" onClick={e => e.stopPropagation()}>
+            <div className="p-5 border-b border-slate-700">
                 <h3 className="text-lg font-bold text-white text-center">Add More Photos</h3>
-                <p className="text-sm text-gray-400 text-center mt-1">Choose a source for your new photos.</p>
+                <p className="text-sm text-slate-400 text-center mt-1">Choose a source for your new photos.</p>
             </div>
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <button onClick={onUploadFromDevice} className="flex flex-col items-center justify-center p-6 bg-gray-700/50 hover:bg-purple-600/30 rounded-lg border border-gray-600 hover:border-purple-500 transition-all duration-200">
-                    <DevicePhoneMobileIcon className="w-12 h-12 text-purple-400 mb-2"/>
+                <button onClick={onUploadFromDevice} className="flex flex-col items-center justify-center p-6 bg-slate-700/50 hover:bg-yellow-600/30 rounded-lg border border-slate-600 hover:border-yellow-500 transition-all duration-200">
+                    <DevicePhoneMobileIcon className="w-12 h-12 text-yellow-400 mb-2"/>
                     <span className="font-semibold text-white">Upload from Device</span>
-                    <span className="text-xs text-gray-400">Select new photos</span>
+                    <span className="text-xs text-slate-400">Select new photos</span>
                 </button>
-                <button onClick={onSelectFromLibrary} className="flex flex-col items-center justify-center p-6 bg-gray-700/50 hover:bg-purple-600/30 rounded-lg border border-gray-600 hover:border-purple-500 transition-all duration-200">
-                    <ArchiveBoxIcon className="w-12 h-12 text-purple-400 mb-2"/>
+                <button onClick={onSelectFromLibrary} className="flex flex-col items-center justify-center p-6 bg-slate-700/50 hover:bg-yellow-600/30 rounded-lg border border-slate-600 hover:border-yellow-500 transition-all duration-200">
+                    <ArchiveBoxIcon className="w-12 h-12 text-yellow-400 mb-2"/>
                     <span className="font-semibold text-white">My Library</span>
-                    <span className="text-xs text-gray-400">Reuse past photos</span>
+                    <span className="text-xs text-slate-400">Reuse past photos</span>
                 </button>
             </div>
         </div>
@@ -488,16 +490,16 @@ const TripDetail: React.FC<TripDetailProps> = ({ trip, userTrips, onBack, onUpda
       )}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
-            <button onClick={onBack} className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors">
+            <button onClick={onBack} className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors">
               <ArrowLeftIcon className="w-5 h-5" /> {mode === 'preview' ? 'Back to Upload' : 'Back'}
             </button>
             <div className="flex items-center gap-4">
                 {mode === 'preview' ? (
                     <>
-                        <button onClick={onDiscard} className="flex items-center gap-2 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-full">
+                        <button onClick={onDiscard} className="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded-full">
                             <DiscardIcon className="w-5 h-5" /> Discard
                         </button>
-                        <button onClick={onPublish} className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-full transition-all transform hover:scale-105 shadow-lg">
+                        <button onClick={onPublish} className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-full transition-all transform hover:scale-105 shadow-lg">
                             <GlobeAltIcon className="w-5 h-5" /> Publish Trip
                         </button>
                     </>
@@ -505,10 +507,10 @@ const TripDetail: React.FC<TripDetailProps> = ({ trip, userTrips, onBack, onUpda
                     currentUser && trip.user.id === currentUser.id && (
                         isEditing ? (
                              <div className="flex items-center gap-2">
-                                <button onClick={handleCancel} className="flex items-center gap-2 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-full">
+                                <button onClick={handleCancel} className="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded-full">
                                     <XMarkIcon className="w-5 h-5" /> Cancel
                                 </button>
-                                <button onClick={handleSave} className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-full">
+                                <button onClick={handleSave} className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-full">
                                     <CheckIcon className="w-5 h-5" /> Save Changes
                                 </button>
                             </div>
@@ -518,14 +520,14 @@ const TripDetail: React.FC<TripDetailProps> = ({ trip, userTrips, onBack, onUpda
                                     <button
                                         onClick={generatedVideoUrl ? () => setShowVideoModal(true) : handleGenerateVideo}
                                         disabled={isProcessing}
-                                        className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-800 disabled:cursor-not-allowed text-white font-bold py-2 px-4 rounded-full transition-all transform hover:scale-105 shadow-lg"
+                                        className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 disabled:bg-yellow-800 disabled:cursor-not-allowed text-white font-bold py-2 px-4 rounded-full transition-all transform hover:scale-105 shadow-lg"
                                     >
                                         <VideoCameraIcon className={`w-5 h-5 ${isProcessing ? 'animate-pulse' : ''}`} />
                                         {isProcessing ? processingMessage : (processingError ? 'Retry Generation' : (generatedVideoUrl ? 'View Reel' : 'Generate Reel'))}
                                     </button>
                                     {processingError && <p className="text-red-400 text-xs mt-2">{processingError}</p>}
                                 </div>
-                              <button onClick={() => setIsEditing(true)} className="flex items-center gap-2 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-full">
+                              <button onClick={() => setIsEditing(true)} className="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded-full">
                                   <PencilIcon className="w-5 h-5" /> Edit Trip
                               </button>
                             </>
@@ -535,14 +537,14 @@ const TripDetail: React.FC<TripDetailProps> = ({ trip, userTrips, onBack, onUpda
             </div>
         </div>
         <div className="text-center space-y-4">
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-cyan-400">{editableTrip.title}</h1>
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-cyan-400">{editableTrip.title}</h1>
              {mode === 'detail' && (
                 <div onClick={() => onUserClick(trip.user.id)} className="flex items-center justify-center gap-2 cursor-pointer group/user">
                     <img src={trip.user.avatarUrl} alt={trip.user.username} className="w-8 h-8 rounded-full" />
-                    <span className="font-semibold text-gray-300 group-hover/user:text-purple-400 transition-colors">by {trip.user.username}</span>
+                    <span className="font-semibold text-slate-300 group-hover/user:text-yellow-400 transition-colors">by {trip.user.username}</span>
                 </div>
             )}
-            <p className="max-w-2xl mx-auto text-lg text-gray-300">{editableTrip.summary}</p>
+            <p className="max-w-2xl mx-auto text-lg text-slate-300">{editableTrip.summary}</p>
         </div>
         
         {mode === 'detail' && !isEditing && (
@@ -554,12 +556,12 @@ const TripDetail: React.FC<TripDetailProps> = ({ trip, userTrips, onBack, onUpda
                         const userRating = editableTrip.ratings.find(r => r.userId === currentUser?.id)?.value || 0;
                         return (
                             <button key={i} onClick={() => handleTripRating(ratingValue)} aria-label={`Rate ${ratingValue} stars`}>
-                            <StarIcon className={`w-8 h-8 transition-colors duration-200 ${ratingValue <= userRating ? 'text-yellow-400' : 'text-gray-600 hover:text-yellow-300'}`} filled={ratingValue <= userRating} />
+                            <StarIcon className={`w-8 h-8 transition-colors duration-200 ${ratingValue <= userRating ? 'text-yellow-400' : 'text-slate-600 hover:text-yellow-300'}`} filled={ratingValue <= userRating} />
                             </button>
                         )
                         })}
                     </div>
-                    <p className="text-sm text-gray-400 h-5">
+                    <p className="text-sm text-slate-400 h-5">
                         { editableTrip.ratings.length > 0
                             ? `Average: ${(editableTrip.ratings.reduce((acc, r) => acc + r.value, 0) / editableTrip.ratings.length).toFixed(1)}/5 from ${editableTrip.ratings.length} vote${editableTrip.ratings.length > 1 ? 's' : ''}`
                             : 'Be the first to rate this trip!'
@@ -567,16 +569,16 @@ const TripDetail: React.FC<TripDetailProps> = ({ trip, userTrips, onBack, onUpda
                     </p>
                 </div>
 
-                <div className="flex justify-center items-center gap-6 p-3 bg-gray-800/50 border border-gray-700 rounded-full max-w-xs mx-auto">
-                    <button onClick={handleTripLike} className="flex items-center gap-2 text-gray-300 hover:text-white">
+                <div className="flex justify-center items-center gap-6 p-3 bg-slate-800/60 border border-slate-700 rounded-full max-w-xs mx-auto">
+                    <button onClick={handleTripLike} className="flex items-center gap-2 text-slate-300 hover:text-white">
                         <HeartIcon className={`w-6 h-6 transition-colors ${currentUser && editableTrip.likes.some(l=>l.userId === currentUser.id) ? 'text-red-500 fill-current' : ''}`}/> 
                         <span>{editableTrip.likes.length}</span>
                     </button>
-                    <button onClick={scrollToComments} className="flex items-center gap-2 text-gray-300 hover:text-white">
+                    <button onClick={scrollToComments} className="flex items-center gap-2 text-slate-300 hover:text-white">
                         <ChatBubbleIcon className="w-6 h-6"/> 
                         <span>{editableTrip.comments.length}</span>
                     </button>
-                    <button className="flex items-center gap-2 text-gray-300 hover:text-white">
+                    <button className="flex items-center gap-2 text-slate-300 hover:text-white">
                         <ShareIcon className="w-6 h-6"/> 
                         <span>Share</span>
                     </button>
@@ -586,7 +588,7 @@ const TripDetail: React.FC<TripDetailProps> = ({ trip, userTrips, onBack, onUpda
       </div>
     
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-        <div className="lg:col-span-3 bg-gray-800/50 p-4 rounded-2xl shadow-2xl border border-gray-700">
+        <div className="lg:col-span-3 bg-slate-800/60 p-4 rounded-2xl shadow-2xl border border-slate-700">
           <MapView 
             locations={editableTrip.locations} 
             highlightedLocationId={highlightedLocationId}
@@ -645,34 +647,34 @@ const CreateCompetitionModal: React.FC<{
 
     return (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
-            <div className="bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-gray-700" onClick={e => e.stopPropagation()}>
+            <div className="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-700" onClick={e => e.stopPropagation()}>
                 <form onSubmit={handleSubmit}>
-                    <div className="p-5 border-b border-gray-700">
+                    <div className="p-5 border-b border-slate-700">
                         <h3 className="text-lg font-bold text-white text-center">Create New Competition</h3>
                     </div>
                     <div className="p-6 space-y-4">
                         <div>
-                            <label className="text-sm font-bold text-gray-300 block mb-2" htmlFor="comp-title">Title</label>
-                            <input id="comp-title" type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:ring-2 focus:ring-purple-500 focus:outline-none" placeholder="e.g., 'Golden Hour Landscapes'" required />
+                            <label className="text-sm font-bold text-slate-300 block mb-2" htmlFor="comp-title">Title</label>
+                            <input id="comp-title" type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full p-3 bg-slate-700 rounded-lg border border-slate-600 focus:ring-2 focus:ring-yellow-500 focus:outline-none" placeholder="e.g., 'Golden Hour Landscapes'" required />
                         </div>
                         <div>
-                            <label className="text-sm font-bold text-gray-300 block mb-2" htmlFor="comp-desc">Theme / Description</label>
-                            <textarea id="comp-desc" value={description} onChange={e => setDescription(e.target.value)} className="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:ring-2 focus:ring-purple-500 focus:outline-none" placeholder="Describe the competition's theme..." required />
+                            <label className="text-sm font-bold text-slate-300 block mb-2" htmlFor="comp-desc">Theme / Description</label>
+                            <textarea id="comp-desc" value={description} onChange={e => setDescription(e.target.value)} className="w-full p-3 bg-slate-700 rounded-lg border border-slate-600 focus:ring-2 focus:ring-yellow-500 focus:outline-none" placeholder="Describe the competition's theme..." required />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="text-sm font-bold text-gray-300 block mb-2" htmlFor="comp-end-date">Submission Deadline</label>
-                                <input id="comp-end-date" type="date" value={endDate} onChange={e => setEndDate(e.target.value)} min={getLocalDateISOString(new Date())} className="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:ring-2 focus:ring-purple-500 focus:outline-none" required />
+                                <label className="text-sm font-bold text-slate-300 block mb-2" htmlFor="comp-end-date">Submission Deadline</label>
+                                <input id="comp-end-date" type="date" value={endDate} onChange={e => setEndDate(e.target.value)} min={getLocalDateISOString(new Date())} className="w-full p-3 bg-slate-700 rounded-lg border border-slate-600 focus:ring-2 focus:ring-yellow-500 focus:outline-none" required />
                             </div>
                              <div>
-                                <label className="text-sm font-bold text-gray-300 block mb-2" htmlFor="comp-max-entries">Max Entries Per User</label>
-                                <input id="comp-max-entries" type="number" min="1" max="10" value={maxEntries} onChange={e => setMaxEntries(parseInt(e.target.value, 10))} className="w-full p-3 bg-gray-700 rounded-lg border border-gray-600 focus:ring-2 focus:ring-purple-500 focus:outline-none" required />
+                                <label className="text-sm font-bold text-slate-300 block mb-2" htmlFor="comp-max-entries">Max Entries Per User</label>
+                                <input id="comp-max-entries" type="number" min="1" max="10" value={maxEntries} onChange={e => setMaxEntries(parseInt(e.target.value, 10))} className="w-full p-3 bg-slate-700 rounded-lg border border-slate-600 focus:ring-2 focus:ring-yellow-500 focus:outline-none" required />
                             </div>
                         </div>
                     </div>
-                    <div className="p-4 flex justify-end items-center border-t border-gray-700 bg-gray-800/50">
-                        <button type="button" onClick={onClose} className="font-semibold text-gray-300 hover:text-white px-4 py-2 rounded-lg">Cancel</button>
-                        <button type="submit" className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded-full transition-colors">Create Competition</button>
+                    <div className="p-4 flex justify-end items-center border-t border-slate-700 bg-slate-800/50">
+                        <button type="button" onClick={onClose} className="font-semibold text-slate-300 hover:text-white px-4 py-2 rounded-lg">Cancel</button>
+                        <button type="submit" className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-6 rounded-full transition-colors">Create Competition</button>
                     </div>
                 </form>
             </div>
@@ -691,31 +693,31 @@ const CompetitionListPage: React.FC<{
         <div>
             <div className="flex justify-between items-center mb-8">
                 <h1 className="text-3xl font-bold">Photo Competitions</h1>
-                <button onClick={onCreateCompetition} className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-full transition-all transform hover:scale-105 shadow-lg">
+                <button onClick={onCreateCompetition} className="hidden md:flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-full transition-all transform hover:scale-105 shadow-lg">
                     <TrophyIcon className="w-5 h-5" /> Create Competition
                 </button>
             </div>
              {competitions.length === 0 ? (
-                <div className="text-center py-20 px-8 bg-gray-800/50 rounded-2xl border border-dashed border-gray-700">
+                <div className="text-center py-20 px-8 bg-slate-800/60 rounded-2xl border border-dashed border-slate-700">
                     <h2 className="text-2xl font-bold text-white mb-2">No Competitions Yet</h2>
-                    <p className="text-gray-400 mb-6 max-w-md mx-auto">Be the first to start a new photo competition and challenge the community!</p>
+                    <p className="text-slate-400 mb-6 max-w-md mx-auto">Be the first to start a new photo competition and challenge the community!</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {competitions.map(comp => (
-                        <div key={comp.id} className="bg-gray-800/50 rounded-2xl overflow-hidden border border-gray-700 shadow-lg group transform transition-all duration-300 hover:shadow-purple-500/20 hover:-translate-y-1 cursor-pointer" onClick={() => onSelectCompetition(comp.id)}>
+                        <div key={comp.id} className="bg-slate-800/60 rounded-2xl overflow-hidden border border-slate-700 shadow-lg group transform transition-all duration-300 hover:shadow-yellow-500/20 hover:-translate-y-1 cursor-pointer" onClick={() => onSelectCompetition(comp.id)}>
                             <div className="p-5">
-                                <h3 className="text-xl font-bold text-white truncate group-hover:text-purple-400 transition-colors">{comp.title}</h3>
-                                <p className="text-gray-400 text-sm mt-2 line-clamp-3">{comp.description}</p>
+                                <h3 className="text-xl font-bold text-white truncate group-hover:text-yellow-400 transition-colors">{comp.title}</h3>
+                                <p className="text-slate-400 text-sm mt-2 line-clamp-3">{comp.description}</p>
                             </div>
-                             <div className="px-5 pb-4 border-t border-gray-700/50">
+                             <div className="px-5 pb-4 border-t border-slate-700/50">
                                  <div className="flex justify-between items-center mt-3">
                                     <div onClick={(e) => { e.stopPropagation(); onUserClick(comp.creator.id); }} className="flex items-center gap-2 cursor-pointer group/user">
                                         <img src={comp.creator.avatarUrl} alt={comp.creator.username} className="w-8 h-8 rounded-full"/>
-                                        <span className="text-sm font-semibold text-gray-300 group-hover/user:text-purple-400 transition-colors">{comp.creator.username}</span>
+                                        <span className="text-sm font-semibold text-slate-300 group-hover/user:text-yellow-400 transition-colors">{comp.creator.username}</span>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-xs text-gray-400">Ends On</p>
+                                        <p className="text-xs text-slate-400">Ends On</p>
                                         <p className="font-semibold text-sm text-white">{parseUTCDate(comp.endDate).toLocaleDateString(undefined, { timeZone: 'UTC' })}</p>
                                     </div>
                                 </div>
@@ -767,25 +769,25 @@ const CompetitionDetailPage: React.FC<{
         <div>
             <input type="file" accept="image/*" ref={fileInputRef} onChange={handleFileSelect} className="hidden" />
             <div className="mb-8">
-                <button onClick={onBack} className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors mb-4">
+                <button onClick={onBack} className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors mb-4">
                   <ArrowLeftIcon className="w-5 h-5" /> Back to Competitions
                 </button>
                 <div className="text-center space-y-4">
-                    <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-cyan-400">{competition.title}</h1>
+                    <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-cyan-400">{competition.title}</h1>
                      <div onClick={() => onUserClick(competition.creator.id)} className="flex items-center justify-center gap-2 cursor-pointer group/user">
                         <img src={competition.creator.avatarUrl} alt={competition.creator.username} className="w-8 h-8 rounded-full" />
-                        <span className="font-semibold text-gray-300 group-hover/user:text-purple-400 transition-colors">Hosted by {competition.creator.username}</span>
+                        <span className="font-semibold text-slate-300 group-hover/user:text-yellow-400 transition-colors">Hosted by {competition.creator.username}</span>
                     </div>
-                    <p className="max-w-2xl mx-auto text-lg text-gray-300">{competition.description}</p>
-                    <div className="text-sm text-gray-400">Submission Deadline: {parseUTCDate(competition.endDate).toLocaleDateString(undefined, { timeZone: 'UTC', year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                    <p className="max-w-2xl mx-auto text-lg text-slate-300">{competition.description}</p>
+                    <div className="text-sm text-slate-400">Submission Deadline: {parseUTCDate(competition.endDate).toLocaleDateString(undefined, { timeZone: 'UTC', year: 'numeric', month: 'long', day: 'numeric' })}</div>
                 </div>
             </div>
 
-            <div className="p-4 bg-gray-800/50 border border-gray-700 rounded-2xl mb-8">
+            <div className="p-4 bg-slate-800/60 border border-slate-700 rounded-2xl mb-8">
                  <div className="flex justify-between items-center">
                     <h2 className="text-xl font-bold">Submissions ({entries.length})</h2>
                     {canSubmit && (
-                        <button onClick={() => fileInputRef.current?.click()} disabled={isSubmitting} className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-800 disabled:cursor-not-allowed text-white font-bold py-2 px-4 rounded-full">
+                        <button onClick={() => fileInputRef.current?.click()} disabled={isSubmitting} className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 disabled:bg-yellow-800 disabled:cursor-not-allowed text-white font-bold py-2 px-4 rounded-full">
                             <PlusIcon className="w-5 h-5"/> Submit Photo ({userEntries.length}/{competition.maxEntriesPerUser})
                         </button>
                     )}
@@ -793,22 +795,22 @@ const CompetitionDetailPage: React.FC<{
                  {submitError && <p className="text-red-400 text-sm mt-2">{submitError}</p>}
                  {!isCompetitionActive && <p className="text-yellow-400 text-sm mt-2 text-center">This competition has ended.</p>}
                  {isCreator && (
-                    <p className="text-sm text-purple-300 bg-purple-900/50 p-3 rounded-lg text-center mt-4">
+                    <p className="text-sm text-yellow-300 bg-yellow-900/50 p-3 rounded-lg text-center mt-4">
                         <b>Host Controls:</b> Hover over a photo and click a trophy icon to assign ranks.
                     </p>
                 )}
             </div>
 
             {entries.length === 0 ? (
-                 <div className="text-center py-20 px-8 bg-gray-800/50 rounded-2xl border border-dashed border-gray-700">
+                 <div className="text-center py-20 px-8 bg-slate-800/60 rounded-2xl border border-dashed border-slate-700">
                     <h2 className="text-2xl font-bold text-white mb-2">No Submissions Yet</h2>
-                    {isCompetitionActive && <p className="text-gray-400 mb-6 max-w-md mx-auto">Be the first to submit your photo!</p>}
+                    {isCompetitionActive && <p className="text-slate-400 mb-6 max-w-md mx-auto">Be the first to submit your photo!</p>}
                 </div>
             ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {entries.map(entry => (
                         <div key={entry.id} className="group relative">
-                            <div className="aspect-square rounded-lg overflow-hidden border-2 border-transparent group-hover:border-purple-500 transition-all">
+                            <div className="aspect-square rounded-lg overflow-hidden border-2 border-transparent group-hover:border-yellow-500 transition-all">
                                 <img src={entry.photoUrl} alt={`Submission by ${entry.user.username}`} className="w-full h-full object-cover" />
                             </div>
                             <div className="absolute bottom-0 left-0 right-0 bg-black/60 p-2 rounded-b-lg">
@@ -820,7 +822,7 @@ const CompetitionDetailPage: React.FC<{
                             
                             {/* RANK DISPLAY - for everyone */}
                             {entry.rank && (
-                                <div className={`absolute -top-3 -right-3 p-1.5 rounded-full shadow-lg ${entry.rank === 1 ? 'bg-yellow-400' : entry.rank === 2 ? 'bg-gray-400' : 'bg-yellow-600'}`}>
+                                <div className={`absolute -top-3 -right-3 p-1.5 rounded-full shadow-lg ${entry.rank === 1 ? 'bg-yellow-400' : entry.rank === 2 ? 'bg-slate-400' : 'bg-yellow-600'}`}>
                                     <TrophyIcon className="w-6 h-6 text-white"/>
                                 </div>
                             )}
@@ -832,7 +834,7 @@ const CompetitionDetailPage: React.FC<{
                                         const isRanked = entry.rank === rank;
                                         const rankConfig: { [key: number]: { bg: string, label: string } } = {
                                             1: { bg: 'bg-yellow-400 hover:bg-yellow-500', label: '1st Place' },
-                                            2: { bg: 'bg-gray-400 hover:bg-gray-500', label: '2nd Place' },
+                                            2: { bg: 'bg-slate-400 hover:bg-slate-500', label: '2nd Place' },
                                             3: { bg: 'bg-yellow-600 hover:bg-yellow-700', label: '3rd Place' },
                                         };
                                         return (
@@ -865,7 +867,7 @@ const ErrorDisplay: React.FC<{ message: string; onRetry?: () => void }> = ({ mes
         {onRetry && (
             <button
                 onClick={onRetry}
-                className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded-full transition-transform transform hover:scale-105 shadow-lg mx-auto"
+                className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-6 rounded-full transition-transform transform hover:scale-105 shadow-lg mx-auto"
             >
                 <RefreshIcon className="w-5 h-5" />
                 Try Again
@@ -876,7 +878,7 @@ const ErrorDisplay: React.FC<{ message: string; onRetry?: () => void }> = ({ mes
 
 
 // --- MAIN APP COMPONENT ---
-type ViewState = 
+export type ViewState = 
     | { view: 'profile', userId: string } 
     | { view: 'explore' } 
     | { view: 'create' } 
@@ -1291,6 +1293,23 @@ const App: React.FC = () => {
             setIsLoading(false);
         }
     };
+
+  const handleMobileNavigation = (view: 'profile' | 'explore' | 'create' | 'competitions') => {
+    switch(view) {
+        case 'profile':
+            setViewState({ view: 'profile', userId: currentUser!.id });
+            break;
+        case 'explore':
+            setViewState({ view: 'explore' });
+            break;
+        case 'create':
+            setViewState({ view: 'create' });
+            break;
+        case 'competitions':
+            setViewState({ view: 'competitions' });
+            break;
+    }
+  };
   
   if (isLoading) return <Loader message={loadingMessage || 'Initializing...'} />;
   if (!currentUser || !viewState) return <Auth onLogin={handleLogin} onRegister={handleRegister} onResendConfirmation={handleResendConfirmation} initialError={authError} />;
@@ -1317,7 +1336,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="bg-gray-900 text-white min-h-screen antialiased">
+    <div className="bg-slate-900 text-white min-h-screen antialiased">
       <Header 
         onTitleClick={() => setViewState({ view: 'profile', userId: currentUser.id })}
         onExploreClick={() => setViewState({ view: 'explore' })}
@@ -1325,10 +1344,14 @@ const App: React.FC = () => {
         onLogout={handleLogout} 
         user={currentUser} 
       />
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 md:py-8">
         {showCreateCompetitionModal && <CreateCompetitionModal onClose={() => setShowCreateCompetitionModal(false)} onCreate={handleCreateCompetition} />}
         {error ? <ErrorDisplay message={error.message} onRetry={error.onRetry} /> : renderContent()}
       </main>
+      <BottomNavBar 
+        onNavigate={handleMobileNavigation}
+        currentView={viewState.view}
+      />
     </div>
   );
 };

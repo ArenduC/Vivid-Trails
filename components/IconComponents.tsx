@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 export const MapPinIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -128,7 +129,7 @@ export const ShutterSpeedIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 export const ApertureIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9.75v4.5m0-4.5l-2.475-1.35m2.475 1.35L14.475 8.4M12 9.75L9.525 8.4m2.475 1.35l2.475 1.35M4.5 6.453l2.475 1.35m0 0l2.475 1.35m-2.475-1.35L4.5 9.153m2.475-1.35l2.475-1.35m0 0l2.475 1.35m-2.475-1.35L9.525 6.453m4.95 1.95l2.475-1.35m0 0l2.475 1.35m-2.475-1.35L14.475 9.153m2.475-1.35l2.475 1.35m0 0l-2.475 1.35m2.475-1.35L19.5 6.453m-2.475 1.95l-2.475 1.35m0 0l-2.475 1.35m2.475-1.35L14.475 12m-4.95-1.95l-2.475 1.35m0 0l-2.475-1.35m2.475 1.35L9.525 12m-4.95 1.95l-2.475-1.35m0 0l-2.475 1.35m2.475-1.35L4.5 14.847m2.475 1.35l2.475 1.35m0 0l2.475-1.35m-2.475 1.35L9.525 17.547m4.95-1.95l2.475 1.35m0 0l2.475-1.35m-2.475 1.35L14.475 14.847m2.475 1.35l2.475-1.35m0 0l2.475 1.35m-2.475-1.35L19.5 17.547m-2.475-1.35l-2.475 1.35m0 0l-2.475-1.35m2.475 1.35L12 14.25" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9.75v4.5m0-4.5l-2.475-1.35m2.475 1.35L14.475 8.4M12 9.75L9.525 8.4m2.475 1.35l2.475 1.35M4.5 6.453l2.475 1.35m0 0l2.475 1.35m-2.475-1.35L4.5 9.153m2.475-1.35l2.475-1.35m0 0l2.475 1.35m-2.475-1.35L9.525 6.453m4.95 1.95l2.475-1.35m0 0l2.475 1.35m-2.475-1.35L14.475 9.153m2.475-1.35l2.475 1.35m0 0l-2.475 1.35m2.475-1.35L19.5 6.453m-2.475 1.95l-2.475 1.35m0 0l-2.475 1.35m2.475-1.35L14.475 12m-4.95-1.95l-2.475 1.35m0 0l-2.475-1.35m2.475 1.35L9.525 12m-4.95 1.95l-2.475-1.35m0 0l-2.475 1.35m2.475-1.35L4.5 14.847m2.475 1.35l2.475 1.35m0 0l2.475-1.35m-2.475 1.35L9.525 17.547m4.95-1.95l2.475 1.35m0 0l2.475-1.35m-2.475-1.35L14.475 14.847m2.475 1.35l2.475-1.35m0 0l2.475 1.35m-2.475-1.35L19.5 17.547m-2.475-1.35l-2.475 1.35m0 0l-2.475-1.35m2.475 1.35L12 14.25" />
     </svg>
 );
 
@@ -173,5 +174,43 @@ export const TrophyIcon = (props: React.SVGProps<SVGSVGElement>) => (
         <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 18.75h-9a9.006 9.006 0 0 1-5.02-1.412A5.983 5.983 0 0 1 2.25 12.75V9.75a3.75 3.75 0 0 1 3.75-3.75h12A3.75 3.75 0 0 1 21.75 9.75v3a5.983 5.983 0 0 1-4.23 4.588A9.006 9.006 0 0 1 16.5 18.75Z" />
         <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75V3.75c0-1.036.84-1.875 1.875-1.875h3.75c1.036 0 1.875.84 1.875 1.875V6.75" />
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75V21m-4.06-2.06 1.56-1.56m6.12 3.12-1.56-1.56" />
+    </svg>
+);
+
+export const BellIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+    </svg>
+);
+
+export const LockClosedIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 0 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+    </svg>
+);
+
+export const EyeIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
+    </svg>
+);
+
+export const EyeSlashIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19 12 19c.996 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0 1 12 4.5c4.756 0 8.773 2.662 10.065 6.828a10.45 10.45 0 0 1-1.742 4.076M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M1.5 1.5l21 21" />
+    </svg>
+);
+
+export const ChevronDownIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+    </svg>
+);
+
+export const ChevronUpIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
     </svg>
 );

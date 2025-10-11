@@ -46,17 +46,17 @@ const LibraryImagePicker: React.FC<LibraryImagePickerProps> = ({ userTrips, onCl
 
     return (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose} role="dialog" aria-modal="true">
-            <div className="bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col overflow-hidden border border-gray-700" onClick={e => e.stopPropagation()}>
-                <div className="p-4 flex justify-between items-center border-b border-gray-700 flex-shrink-0">
+            <div className="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col overflow-hidden border border-slate-700" onClick={e => e.stopPropagation()}>
+                <div className="p-4 flex justify-between items-center border-b border-slate-700 flex-shrink-0">
                     <h3 className="text-lg font-bold text-white">Select Photos from Your Library</h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-white" aria-label="Close library picker">
+                    <button onClick={onClose} className="text-slate-400 hover:text-white" aria-label="Close library picker">
                         <XMarkIcon className="w-6 h-6" />
                     </button>
                 </div>
                 
                 {allPhotos.length === 0 ? (
                     <div className="flex-grow flex items-center justify-center text-center">
-                        <p className="text-gray-400">Your photo library is empty.<br/>Create some trips to start building it!</p>
+                        <p className="text-slate-400">Your photo library is empty.<br/>Create some trips to start building it!</p>
                     </div>
                 ) : (
                      <div className="flex-grow p-4 overflow-y-auto">
@@ -70,9 +70,9 @@ const LibraryImagePicker: React.FC<LibraryImagePickerProps> = ({ userTrips, onCl
                                             alt={photo.description || 'Library photo'} 
                                             className={`w-full h-full object-cover transition-transform duration-200 ${isSelected ? 'scale-90' : 'group-hover:scale-105'}`}
                                         />
-                                        <div className={`absolute inset-0 transition-all duration-200 ${isSelected ? 'bg-purple-600/50 ring-4 ring-purple-500' : 'bg-black/50 opacity-0 group-hover:opacity-100'}`}></div>
+                                        <div className={`absolute inset-0 transition-all duration-200 ${isSelected ? 'bg-yellow-600/50 ring-4 ring-yellow-500' : 'bg-black/50 opacity-0 group-hover:opacity-100'}`}></div>
                                         {isSelected && (
-                                            <div className="absolute top-2 right-2 bg-purple-600 text-white rounded-full p-1">
+                                            <div className="absolute top-2 right-2 bg-yellow-600 text-white rounded-full p-1">
                                                 <CheckIcon className="w-4 h-4" />
                                             </div>
                                         )}
@@ -83,13 +83,13 @@ const LibraryImagePicker: React.FC<LibraryImagePickerProps> = ({ userTrips, onCl
                     </div>
                 )}
 
-                <div className="p-4 flex justify-end items-center border-t border-gray-700 flex-shrink-0 bg-gray-800/50">
+                <div className="p-4 flex justify-end items-center border-t border-slate-700 flex-shrink-0 bg-slate-800/50">
                      <div className="flex items-center gap-4">
-                        <button onClick={onClose} className="font-semibold text-gray-300 hover:text-white px-4 py-2 rounded-lg">Cancel</button>
+                        <button onClick={onClose} className="font-semibold text-slate-300 hover:text-white px-4 py-2 rounded-lg">Cancel</button>
                         <button 
                             onClick={handleConfirm}
                             disabled={selectedUrls.size === 0}
-                            className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold py-2 px-6 rounded-full transition-colors"
+                            className="bg-yellow-600 hover:bg-yellow-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-bold py-2 px-6 rounded-full transition-colors"
                         >
                             Add {selectedUrls.size > 0 ? `${selectedUrls.size} ` : ''}Photo{selectedUrls.size !== 1 && 's'}
                         </button>

@@ -9,89 +9,24 @@ interface MapViewProps {
   onMarkerClick?: (locationId: string) => void;
 }
 
-// This style object is now for your reference.
-// To apply this style, create a Map ID in the Google Cloud Console,
-// and import this JSON into the style editor for that Map ID.
 const mapStyle = [
-  // A beautiful dark theme with purple and cyan highlights
-  { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
-  { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
-  { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
-  {
-    featureType: "administrative.locality",
-    elementType: "labels.text.fill",
-    stylers: [{ color: "#d59563" }],
-  },
-  {
-    featureType: "poi",
-    elementType: "labels.text.fill",
-    stylers: [{ color: "#9ca3af" }], // gray-400
-  },
-    {
-    featureType: "poi.park",
-    elementType: "geometry",
-    stylers: [{ color: "#263c3f" }],
-  },
-  {
-    featureType: "poi.park",
-    elementType: "labels.text.fill",
-    stylers: [{ color: "#6b9a76" }],
-  },
-  {
-    featureType: "road",
-    elementType: "geometry",
-    stylers: [{ color: "#38414e" }],
-  },
-  {
-    featureType: "road",
-    elementType: "geometry.stroke",
-    stylers: [{ color: "#212a37" }],
-  },
-  {
-    featureType: "road",
-    elementType: "labels.text.fill",
-    stylers: [{ color: "#9ca3af" }], // gray-400
-  },
-  {
-    featureType: "road.highway",
-    elementType: "geometry",
-    stylers: [{ color: "#a855f7" }], // purple-500
-  },
-    {
-    featureType: "road.highway",
-    elementType: "geometry.stroke",
-    stylers: [{ color: "#1e293b" }], // slate-800
-  },
-  {
-    featureType: "road.highway",
-    elementType: "labels.text.fill",
-    stylers: [{ color: "#f3d19c" }],
-  },
-  {
-    featureType: "transit",
-    elementType: "geometry",
-    stylers: [{ color: "#2f3948" }],
-  },
-  {
-    featureType: "transit.station",
-    elementType: "labels.text.fill",
-    stylers: [{ color: "#d59563" }],
-  },
-  {
-    featureType: "water",
-    elementType: "geometry",
-    stylers: [{ color: "#17263c" }],
-  },
-  {
-    featureType: "water",
-    elementType: "labels.text.fill",
-    stylers: [{ color: "#515c6d" }],
-  },
-  {
-    featureType: "water",
-    elementType: "labels.text.stroke",
-    stylers: [{ color: "#17263c" }],
-  },
+    { elementType: "geometry", stylers: [{ color: "#1e293b" }] },
+    { elementType: "labels.text.stroke", stylers: [{ color: "#0f172a" }] },
+    { elementType: "labels.text.fill", stylers: [{ color: "#94a3b8" }] },
+    { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#facc15" }] },
+    { featureType: "poi", elementType: "labels.text.fill", stylers: [{ color: "#94a3b8" }] },
+    { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#1e293b" }] },
+    { featureType: "poi.park", elementType: "labels.text.fill", stylers: [{ color: "#5eead4" }] },
+    { featureType: "road", elementType: "geometry", stylers: [{ color: "#334155" }] },
+    { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#1e293b" }] },
+    { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#94a3b8" }] },
+    { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#eab308" }] },
+    { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#0f172a" }] },
+    { featureType: "transit", elementType: "geometry", stylers: [{ color: "#334155" }] },
+    { featureType: "transit.station", elementType: "labels.text.fill", stylers: [{ color: "#facc15" }] },
+    { featureType: "water", elementType: "geometry", stylers: [{ color: "#0f172a" }] },
+    { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#64748b" }] },
+    { featureType: "water", elementType: "labels.text.stroke", stylers: [{ color: "#0f172a" }] },
 ];
 
 
@@ -103,9 +38,9 @@ const MapView: React.FC<MapViewProps> = ({ locations, highlightedLocationId, onM
   // Check if the Google Maps API script has loaded successfully.
   if (typeof google === 'undefined' || typeof google.maps === 'undefined') {
     return (
-      <div className="w-full h-full min-h-[400px] lg:min-h-[70vh] rounded-xl bg-gray-800 border border-dashed border-red-700/50 flex flex-col items-center justify-center text-center p-4">
+      <div className="w-full h-full min-h-[400px] lg:min-h-[70vh] rounded-xl bg-slate-800 border border-dashed border-red-700/50 flex flex-col items-center justify-center text-center p-4">
         <h3 className="text-xl font-bold text-red-300 mb-2">Map Unavailable</h3>
-        <p className="text-gray-300 max-w-sm">
+        <p className="text-slate-300 max-w-sm">
           The Google Maps API key is missing or invalid. Please add your key to the
           <code>&lt;script&gt;</code> tag in <code>index.html</code> to enable map functionality.
         </p>
@@ -113,6 +48,7 @@ const MapView: React.FC<MapViewProps> = ({ locations, highlightedLocationId, onM
     );
   }
 
+  // Effect to initialize the map
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
 
@@ -127,20 +63,18 @@ const MapView: React.FC<MapViewProps> = ({ locations, highlightedLocationId, onM
 
   }, []);
 
+  // Effect to draw/update markers and polyline when data or highlight changes
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || locations.length === 0) return;
+    if (!map) return;
 
-    // Clear previous markers
-    markersRef.current.forEach(marker => marker.setMap(null));
+    // Clear previous markers and polyline
+    markersRef.current.forEach(item => item.setMap(null));
     markersRef.current = [];
+    
+    if (locations.length === 0) return;
 
-    const bounds = new google.maps.LatLngBounds();
-    const latLngs = locations.map(loc => {
-        const latLng = new google.maps.LatLng(loc.coords.lat, loc.coords.lng);
-        bounds.extend(latLng);
-        return latLng;
-    });
+    const latLngs = locations.map(loc => new google.maps.LatLng(loc.coords.lat, loc.coords.lng));
 
     locations.forEach((loc, index) => {
         const isHighlighted = loc.id === highlightedLocationId;
@@ -157,10 +91,10 @@ const MapView: React.FC<MapViewProps> = ({ locations, highlightedLocationId, onM
             icon: {
                 path: google.maps.SymbolPath.CIRCLE,
                 scale: isHighlighted ? 12 : 10,
-                fillColor: isHighlighted ? '#22d3ee' : '#a855f7', // cyan-400 or purple-500
+                fillColor: isHighlighted ? '#22d3ee' : '#eab308', // cyan-400 or yellow-500
                 fillOpacity: 1,
                 strokeWeight: 4,
-                strokeColor: isHighlighted ? '#1f2937' : '#374151' // gray-800 or gray-700
+                strokeColor: isHighlighted ? '#0f172a' : '#1e293b' // slate-900 or slate-800
             },
             zIndex: isHighlighted ? 100 : 1,
         });
@@ -178,7 +112,7 @@ const MapView: React.FC<MapViewProps> = ({ locations, highlightedLocationId, onM
     const polyline = new google.maps.Polyline({
       path: latLngs,
       geodesic: true,
-      strokeColor: '#a855f7', // purple-500
+      strokeColor: '#eab308', // yellow-500
       strokeOpacity: 0.7,
       strokeWeight: 3,
       icons: [{
@@ -186,7 +120,7 @@ const MapView: React.FC<MapViewProps> = ({ locations, highlightedLocationId, onM
             path: 'M 0,-1 0,1',
             strokeOpacity: 1,
             scale: 3,
-            strokeColor: '#38414e'
+            strokeColor: '#334155' // slate-700
           },
           offset: '0',
           repeat: '15px'
@@ -195,22 +129,34 @@ const MapView: React.FC<MapViewProps> = ({ locations, highlightedLocationId, onM
     
     polyline.setMap(map);
     markersRef.current.push(polyline); // Store to clear later
-
-
-    if (latLngs.length > 0) {
-      map.fitBounds(bounds, 80); // 80px padding
-
-      google.maps.event.addListenerOnce(map, 'idle', () => {
-        const currentZoom = map.getZoom();
-        const STATE_LEVEL_ZOOM = 9;
-        if (currentZoom > STATE_LEVEL_ZOOM) {
-          map.setZoom(STATE_LEVEL_ZOOM);
-        }
-      });
-    }
   }, [locations, highlightedLocationId, onMarkerClick]);
 
-  return <div ref={mapContainerRef} className="w-full h-full min-h-[400px] lg:min-h-[70vh] rounded-xl bg-gray-700" />;
+  // Effect to fit map bounds only when locations change
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || locations.length === 0) return;
+
+    const bounds = new google.maps.LatLngBounds();
+    locations.forEach(loc => bounds.extend(new google.maps.LatLng(loc.coords.lat, loc.coords.lng)));
+    
+    map.fitBounds(bounds, 80); // 80px padding
+
+    const listener = google.maps.event.addListenerOnce(map, 'idle', () => {
+      const currentZoom = map.getZoom();
+      const STATE_LEVEL_ZOOM = 9;
+      if (currentZoom > STATE_LEVEL_ZOOM) {
+        map.setZoom(STATE_LEVEL_ZOOM);
+      }
+    });
+
+    // Cleanup listener on unmount or before re-running
+    return () => {
+      google.maps.event.removeListener(listener);
+    }
+    
+  }, [locations]);
+
+  return <div ref={mapContainerRef} className="w-full h-full min-h-[400px] lg:min-h-[70vh] rounded-xl bg-slate-700" />;
 };
 
 export default MapView;
