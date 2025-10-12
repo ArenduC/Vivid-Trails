@@ -5,10 +5,11 @@ interface AuthProps {
     onLogin: (email: string, pass:string) => Promise<string | null>;
     onRegister: (email: string, pass: string, username: string) => Promise<string | null>;
     onResendConfirmation: (email: string) => Promise<string | null>;
+    onInfoClick: (content: 'about' | 'faq' | 'contact') => void;
     initialError?: string | null;
 }
 
-const Auth: React.FC<AuthProps> = ({ onLogin, onRegister, onResendConfirmation, initialError }) => {
+const Auth: React.FC<AuthProps> = ({ onLogin, onRegister, onResendConfirmation, onInfoClick, initialError }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [isLoginView, setIsLoginView] = useState(true);
     
@@ -195,9 +196,9 @@ const Auth: React.FC<AuthProps> = ({ onLogin, onRegister, onResendConfirmation, 
                              <img src="https://zcxsscvheqidzvkhlnwz.supabase.co/storage/v1/object/public/Default%20image/graphynovus%20_%20Vivid%20Trails.png" alt="Vivid Trails Wordmark" className="h-5"/>
                         </div>
                         <nav className="hidden md:flex items-center gap-8 text-sm font-semibold">
-                            <a href="#" className="text-slate-200 hover:text-white transition-colors">About</a>
-                            <a href="#" className="text-slate-200 hover:text-white transition-colors">FAQ</a>
-                            <a href="#" className="text-slate-200 hover:text-white transition-colors">Contact</a>
+                            <button onClick={() => onInfoClick('about')} className="text-slate-200 hover:text-white transition-colors">About</button>
+                            <button onClick={() => onInfoClick('faq')} className="text-slate-200 hover:text-white transition-colors">FAQ</button>
+                            <button onClick={() => onInfoClick('contact')} className="text-slate-200 hover:text-white transition-colors">Contact</button>
                         </nav>
                     </div>
                 </header>

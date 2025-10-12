@@ -48,17 +48,27 @@ const NotificationPanel: React.FC = () => {
 
 const Header: React.FC<HeaderProps> = ({ onTitleClick, onExploreClick, onCompetitionsClick, user, onLogout }) => {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const notificationsRef = useRef<HTMLDivElement>(null);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
         if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
             setIsNotificationsOpen(false);
         }
+        if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+            setIsProfileMenuOpen(false);
+        }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const handleLogoutClick = () => {
+    onLogout();
+    setIsProfileMenuOpen(false);
+  };
 
   return (
     <header className="py-4 border-b border-slate-700/50 sticky top-0 bg-slate-900/80 backdrop-blur-md z-30">
@@ -89,12 +99,18 @@ const Header: React.FC<HeaderProps> = ({ onTitleClick, onExploreClick, onCompeti
                     </button>
                     {isNotificationsOpen && <NotificationPanel />}
                 </div>
-
-                <div onClick={onTitleClick} className="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-slate-800/50">
-                    <span className="font-semibold hidden sm:inline text-slate-300 group-hover:text-white transition-colors">{user.username}</span>
-                    <img src={user.avatarUrl} alt={user.username} className="w-10 h-10 rounded-full border-2 border-yellow-400 group-hover:border-yellow-300 transition-colors"/>
+                
+                <div className="relative" ref={profileMenuRef}>
+                    <div onClick={() => setIsProfileMenuOpen(prev => !prev)} className="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-slate-800/50" aria-haspopup="true" aria-expanded={isProfileMenuOpen}>
+                        <span className="font-semibold hidden sm:inline text-slate-300 group-hover:text-white transition-colors">{user.username}</span>
+                        <img src={user.avatarUrl} alt={user.username} className="w-10 h-10 rounded-full border-2 border-yellow-400 group-hover:border-yellow-300 transition-colors"/>
+                    </div>
+                    {isProfileMenuOpen && (
+                        <div className="absolute top-full right-0 mt-2 w-56 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-50 text-white animate-fade-in-down py-2" role="menu">
+                            <button onClick={handleLogoutClick} className="w-full text-left px-4 py-2 text-sm hover:bg-slate-700/50 text-red-400 font-semibold" role="menuitem">Logout</button>
+                        </div>
+                    )}
                 </div>
-                <button onClick={onLogout} className="text-sm text-slate-400 hover:text-white transition-colors hidden sm:block ml-2">Logout</button>
             </div>
         )}
       </div>

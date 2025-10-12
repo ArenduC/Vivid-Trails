@@ -1,5 +1,4 @@
 
-
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { UploadedFile, TripStory, CameraDetails, LocationPin, User, Comment, Rating, Profile, Competition, CompetitionEntry } from './types';
 import { generateTripStory, generateTripVideo, addPhotosToTripStory } from './services/geminiService';
@@ -15,6 +14,8 @@ import CommentSection from './components/CommentSection';
 import LibraryImagePicker from './components/Gallery';
 import ProfilePage from './components/ProfilePage';
 import BottomNavBar from './components/BottomNavBar';
+import InfoModal from './components/InfoModal';
+import { AboutContent, FAQContent, ContactContent } from './components/InfoContent';
 
 declare const EXIF: any;
 
@@ -907,6 +908,7 @@ const App: React.FC = () => {
   const [currentCompetition, setCurrentCompetition] = useState<Competition | null>(null);
   const [competitionEntries, setCompetitionEntries] = useState<CompetitionEntry[]>([]);
   const [showCreateCompetitionModal, setShowCreateCompetitionModal] = useState(false);
+  const [infoModalContent, setInfoModalContent] = useState<'about' | 'faq' | 'contact' | null>(null);
   
   const fetchAndSetTrips = useCallback(async (queryBuilder: any, setter: React.Dispatch<React.SetStateAction<TripStory[]>>) => {
       const { data, error: queryError } = await queryBuilder;
@@ -978,7 +980,7 @@ const App: React.FC = () => {
     });
 
     return () => { subscription.unsubscribe(); };
-  }, [viewState]);
+  }, []);
 
   // Data fetching based on viewState
   useEffect(() => {
@@ -1311,13 +1313,10 @@ const App: React.FC = () => {
     }
   };
   
-  if (isLoading) return <Loader message={loadingMessage || 'Initializing...'} />;
-  if (!currentUser || !viewState) return <Auth onLogin={handleLogin} onRegister={handleRegister} onResendConfirmation={handleResendConfirmation} initialError={authError} />;
-
   const renderContent = () => {
-    switch (viewState.view) {
+    switch (viewState?.view) {
       case 'profile':
-        return profileData ? <ProfilePage profile={profileData} trips={profileTrips} currentUser={currentUser} onSelectTrip={(id) => setViewState({ view: 'detail', tripId: id })} onUserClick={handleUserSelect} onNewTrip={() => setViewState({ view: 'create' })} /> : <Loader message="Loading profile..." />;
+        return profileData ? <ProfilePage profile={profileData} trips={profileTrips} currentUser={currentUser!} onSelectTrip={(id) => setViewState({ view: 'detail', tripId: id })} onUserClick={handleUserSelect} onNewTrip={() => setViewState({ view: 'create' })} /> : null; // No loader here, handled by parent
       case 'explore':
           return <ExplorePage trips={allTrips} onSelectTrip={(id) => setViewState({ view: 'detail', tripId: id })} onUserClick={handleUserSelect} currentUser={currentUser} />;
       case 'create':
@@ -1326,33 +1325,76 @@ const App: React.FC = () => {
         return previewTrip ? <TripDetail trip={previewTrip} userTrips={[]} onBack={() => setViewState({ view: 'create' })} onUpdateTrip={() => {}} onUserClick={handleUserSelect} currentUser={currentUser} mode="preview" onPublish={handlePublishTrip} onDiscard={handleDiscardTrip} /> : null;
       case 'detail':
         const trip = [...profileTrips, ...allTrips].find(t => t.id === viewState.tripId);
-        const userTrips = allTrips.filter(t => t.user.id === currentUser.id); // for library picker
-        return trip ? <TripDetail trip={trip} userTrips={userTrips} onBack={() => setViewState({ view: 'profile', userId: trip.user.id })} onUpdateTrip={handleUpdateTrip} onUserClick={handleUserSelect} currentUser={currentUser} mode="detail" /> : <Loader message="Loading trip..." />;
+        const userTrips = allTrips.filter(t => t.user.id === currentUser!.id); // for library picker
+        return trip ? <TripDetail trip={trip} userTrips={userTrips} onBack={() => setViewState({ view: 'profile', userId: trip.user.id })} onUpdateTrip={handleUpdateTrip} onUserClick={handleUserSelect} currentUser={currentUser} mode="detail" /> : null; // No loader here
       case 'competitions':
         return <CompetitionListPage competitions={competitions} onSelectCompetition={(id) => setViewState({ view: 'competition_detail', id })} onUserClick={handleUserSelect} onCreateCompetition={() => setShowCreateCompetitionModal(true)} />;
       case 'competition_detail':
-        return currentCompetition ? <CompetitionDetailPage competition={currentCompetition} entries={competitionEntries} currentUser={currentUser} onBack={() => setViewState({ view: 'competitions' })} onUserClick={handleUserSelect} onSubmit={handleSubmitToCompetition} onRankEntry={handleRankEntry} isSubmitting={isLoading} /> : <Loader message="Loading competition..." />;
+        return currentCompetition ? <CompetitionDetailPage competition={currentCompetition} entries={competitionEntries} currentUser={currentUser!} onBack={() => setViewState({ view: 'competitions' })} onUserClick={handleUserSelect} onSubmit={handleSubmitToCompetition} onRankEntry={handleRankEntry} isSubmitting={isLoading} /> : null; // No loader here
+      default:
+        return null;
     }
   };
 
+    const renderInfoModal = () => {
+        if (!infoModalContent) return null;
+
+        const titles = {
+            about: 'About Vivid Trails',
+            faq: 'Frequently Asked Questions',
+            contact: 'Contact Us',
+        };
+
+        const content = {
+            about: <AboutContent />,
+            faq: <FAQContent />,
+            contact: <ContactContent />,
+        };
+
+        return (
+            <InfoModal title={titles[infoModalContent]} onClose={() => setInfoModalContent(null)}>
+                {content[infoModalContent]}
+            </InfoModal>
+        );
+    };
+
+  // Only use the full-page loader for the very initial authentication check.
+  if (isLoading && !currentUser) {
+      return <Loader message={loadingMessage || 'Initializing...'} />;
+  }
+
+
   return (
-    <div className="bg-slate-900 text-white min-h-screen antialiased">
-      <Header 
-        onTitleClick={() => setViewState({ view: 'profile', userId: currentUser.id })}
-        onExploreClick={() => setViewState({ view: 'explore' })}
-        onCompetitionsClick={() => setViewState({ view: 'competitions' })}
-        onLogout={handleLogout} 
-        user={currentUser} 
-      />
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24 md:py-8">
-        {showCreateCompetitionModal && <CreateCompetitionModal onClose={() => setShowCreateCompetitionModal(false)} onCreate={handleCreateCompetition} />}
-        {error ? <ErrorDisplay message={error.message} onRetry={error.onRetry} /> : renderContent()}
-      </main>
-      <BottomNavBar 
-        onNavigate={handleMobileNavigation}
-        currentView={viewState.view}
-      />
-    </div>
+    <>
+      {renderInfoModal()}
+      {!currentUser || !viewState ? (
+         <Auth onLogin={handleLogin} onRegister={handleRegister} onResendConfirmation={handleResendConfirmation} onInfoClick={setInfoModalContent} initialError={authError} />
+      ) : (
+        <div className="bg-slate-900 text-white min-h-screen antialiased">
+          <Header 
+            onTitleClick={() => setViewState({ view: 'profile', userId: currentUser.id })}
+            onExploreClick={() => setViewState({ view: 'explore' })}
+            onCompetitionsClick={() => setViewState({ view: 'competitions' })}
+            onLogout={handleLogout} 
+            user={currentUser} 
+          />
+          <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-20 md:py-8">
+            {showCreateCompetitionModal && <CreateCompetitionModal onClose={() => setShowCreateCompetitionModal(false)} onCreate={handleCreateCompetition} />}
+            {error ? (
+                <ErrorDisplay message={error.message} onRetry={error.onRetry} />
+            ) : isLoading ? (
+                <Loader message={loadingMessage} type="inline" />
+            ) : (
+                renderContent()
+            )}
+          </main>
+          <BottomNavBar 
+            onNavigate={handleMobileNavigation}
+            currentView={viewState.view}
+          />
+        </div>
+      )}
+    </>
   );
 };
 

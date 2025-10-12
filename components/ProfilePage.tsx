@@ -1,18 +1,16 @@
 import React, { useState } from 'react';
-import { Profile, TripStory, User } from '../types';
-import { HomeIcon, UserIcon, RouteIcon, UsersIcon, PlusIcon, SparklesIcon } from './IconComponents';
+import { Profile, TripStory, User, Rating } from '../types';
+import { UserIcon, RouteIcon, UsersIcon, PlusIcon, SparklesIcon, StarIcon, HeartIcon, ChatBubbleIcon } from './IconComponents';
 
 // Re-using the TripCard component by moving its definition here temporarily.
 // Ideally, this would be in its own file (e.g., components/TripCard.tsx)
-const StarRatingDisplay: React.FC<{ ratings: any[], className?: string }> = ({ ratings, className }) => {
+const StarRatingDisplay: React.FC<{ ratings: Rating[], className?: string }> = ({ ratings, className }) => {
     if (!ratings || ratings.length === 0) return null;
     const averageRating = ratings.reduce((acc, r) => acc + r.value, 0) / ratings.length;
 
     return (
         <div className={`flex items-center gap-1 flex-shrink-0 ${className}`}>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 text-yellow-400">
-              <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z" clipRule="evenodd" />
-            </svg>
+            <StarIcon className="w-4 h-4 text-yellow-400" filled />
             <span className="text-sm font-bold text-white">{averageRating.toFixed(1)}</span>
             <span className="text-xs text-slate-400">({ratings.length})</span>
         </div>
@@ -39,11 +37,11 @@ const TripCard: React.FC<{ trip: TripStory; onClick: () => void; onUserClick: (u
         </div>
         <div className="flex items-center gap-4 text-slate-400">
              <div className="flex items-center gap-1.5">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`w-5 h-5 ${currentUser && trip.likes.some(l => l.userId === currentUser.id) ? 'text-red-500 fill-current' : ''}`}><path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" /></svg>
+                <HeartIcon className={`w-5 h-5 ${currentUser && trip.likes.some(l => l.userId === currentUser.id) ? 'text-red-500 fill-current' : ''}`}/>
                 <span className="text-sm">{trip.likes.length}</span>
             </div>
             <div className="flex items-center gap-1.5">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193l-3.722.537a5.25 5.25 0 0 1-1.04-.018l-3.722-.537a5.25 5.25 0 0 0-1.04.018l-3.722.537A2.25 2.25 0 0 1 3 17.25V13c0-1.007.67-1.838 1.62-2.097M15.75 6.75v3.375c0 .621.504 1.125 1.125 1.125h3.375V13a2.25 2.25 0 0 1-2.25 2.25h-9A2.25 2.25 0 0 1 6 13V6.75a2.25 2.25 0 0 1 2.25-2.25h9A2.25 2.25 0 0 1 15.75 6.75Z" /></svg>
+                <ChatBubbleIcon className="w-5 h-5" />
                 <span className="text-sm">{trip.comments.length}</span>
             </div>
         </div>
@@ -61,16 +59,102 @@ interface ProfilePageProps {
     onNewTrip: () => void;
 }
 
+const UserListItem: React.FC<{ user: { avatarUrl: string, username: string, fullName: string } }> = ({ user }) => (
+    <div className="flex items-center justify-between p-3 bg-slate-800/60 rounded-lg">
+        <div className="flex items-center gap-3">
+            <img src={user.avatarUrl} alt={user.username} className="w-12 h-12 rounded-full" />
+            <div>
+                <p className="font-bold text-white">{user.fullName}</p>
+                <p className="text-sm text-slate-400">@{user.username}</p>
+            </div>
+        </div>
+        <button className="bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded-full text-sm transition-colors">
+            Follow
+        </button>
+    </div>
+);
+
 const ProfilePage: React.FC<ProfilePageProps> = ({ profile, trips, currentUser, onSelectTrip, onUserClick, onNewTrip }) => {
-    const [activeTab, setActiveTab] = useState('home');
+    const [activeTab, setActiveTab] = useState('trips');
     const isOwnProfile = profile.id === currentUser.id;
 
     const navItems = [
-        { id: 'home', label: 'Home', icon: HomeIcon },
-        { id: 'profile', label: 'Profile', icon: UserIcon },
         { id: 'trips', label: 'Trips', icon: RouteIcon },
+        { id: 'about', label: 'About', icon: UserIcon },
         { id: 'community', label: 'Community', icon: UsersIcon },
     ];
+
+    // Mock data for Community tab to demonstrate functionality
+    const mockUsers = [
+        { avatarUrl: 'https://picsum.photos/seed/alex/100/100', username: 'alex_travels', fullName: 'Alex Smith' },
+        { avatarUrl: 'https://picsum.photos/seed/jane/100/100', username: 'Wanderlust_Jane', fullName: 'Jane Doe' },
+        { avatarUrl: 'https://picsum.photos/seed/mike/100/100', username: 'mountain_mike', fullName: 'Mike Johnson' },
+        { avatarUrl: 'https://picsum.photos/seed/becca/100/100', username: 'beach_becca', fullName: 'Rebecca Williams' },
+        { avatarUrl: 'https://picsum.photos/seed/chris/100/100', username: 'city_explorer', fullName: 'Chris Brown' },
+    ];
+
+    const renderTabContent = () => {
+        switch (activeTab) {
+            case 'trips':
+                return (
+                    <div>
+                        <h2 className="text-2xl font-bold mb-6">Trips ({trips.length})</h2>
+                        {trips.length === 0 ? (
+                            <div className="text-center py-20 px-8 bg-slate-800/60 rounded-2xl border border-dashed border-slate-700">
+                                <h2 className="text-2xl font-bold text-white mb-2">{isOwnProfile ? "Your adventures await!" : "No trips shared yet."}</h2>
+                                <p className="text-slate-400 mb-6 max-w-md mx-auto">{isOwnProfile ? "You haven't created any trips. Why not share your first journey?" : `${profile.fullName} hasn't shared any trips.`}</p>
+                                {isOwnProfile && (
+                                     <button onClick={onNewTrip} className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-6 rounded-full transition-transform transform hover:scale-105 shadow-lg mx-auto">
+                                        <SparklesIcon className="w-5 h-5"/> Create First Trip
+                                    </button>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                {trips.map(trip => (
+                                    <TripCard key={trip.id} trip={trip} onClick={() => onSelectTrip(trip.id)} onUserClick={onUserClick} currentUser={currentUser} />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                );
+            case 'about':
+                return (
+                     <div className="max-w-4xl mx-auto bg-slate-800/60 p-8 rounded-2xl border border-slate-700">
+                         <h2 className="text-2xl font-bold mb-4 text-white">About {profile.fullName}</h2>
+                         <div className="text-slate-300 leading-relaxed space-y-4">
+                            {profile.bio ? (
+                                <p>{profile.bio}</p>
+                            ) : (
+                                <p>{isOwnProfile ? "You haven't written a bio yet. Click 'Edit Profile' to tell the community about your travel style!" : `${profile.fullName} hasn't written a bio yet.`}</p>
+                            )}
+                         </div>
+                    </div>
+                );
+            case 'community':
+                return (
+                    <div>
+                         <h2 className="text-2xl font-bold mb-6 text-white">Community</h2>
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div>
+                                <h3 className="text-xl font-semibold mb-4">Followers <span className="text-slate-400 font-normal text-base">({profile.followers.toLocaleString()})</span></h3>
+                                <div className="space-y-3">
+                                    {mockUsers.slice(0,3).map(user => <UserListItem key={user.username} user={user} />)}
+                                </div>
+                            </div>
+                             <div>
+                                <h3 className="text-xl font-semibold mb-4">Following <span className="text-slate-400 font-normal text-base">({profile.following.toLocaleString()})</span></h3>
+                                <div className="space-y-3">
+                                     {mockUsers.slice(2,5).map(user => <UserListItem key={user.username} user={user} />)}
+                                </div>
+                            </div>
+                         </div>
+                    </div>
+                );
+            default:
+                return null;
+        }
+    }
 
     return (
         <div>
@@ -126,33 +210,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ profile, trips, currentUser, 
             
             {/* Tab Content */}
             <div className="mt-8">
-                {activeTab === 'home' && (
-                    <div>
-                        <h2 className="text-2xl font-bold mb-6">Recent Trips</h2>
-                        {trips.length === 0 ? (
-                            <div className="text-center py-20 px-8 bg-slate-800/60 rounded-2xl border border-dashed border-slate-700">
-                                <h2 className="text-2xl font-bold text-white mb-2">{isOwnProfile ? "Your adventures await!" : "No trips shared yet."}</h2>
-                                <p className="text-slate-400 mb-6 max-w-md mx-auto">{isOwnProfile ? "You haven't created any trips. Why not share your first journey?" : `${profile.fullName} hasn't shared any trips.`}</p>
-                                {isOwnProfile && (
-                                     <button onClick={onNewTrip} className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-6 rounded-full transition-transform transform hover:scale-105 shadow-lg mx-auto">
-                                        <SparklesIcon className="w-5 h-5"/> Create First Trip
-                                    </button>
-                                )}
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                {trips.map(trip => (
-                                    <TripCard key={trip.id} trip={trip} onClick={() => onSelectTrip(trip.id)} onUserClick={onUserClick} currentUser={currentUser} />
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                )}
-                 {activeTab !== 'home' && (
-                    <div className="text-center py-20 text-slate-500">
-                        Content for "{activeTab}" coming soon!
-                    </div>
-                )}
+                {renderTabContent()}
             </div>
         </div>
     );
