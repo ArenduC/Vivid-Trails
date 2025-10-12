@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useImperativeHandle, forwardRef } from 'react';
 import { TripStory, User, Comment } from '../types';
 import { RouteIcon, CameraIcon, PlusIcon, HeartIcon, ChatBubbleIcon } from './IconComponents';
@@ -71,9 +72,15 @@ const ItineraryDisplay = forwardRef<ItineraryDisplayHandle, ItineraryDisplayProp
     const targetPhoto = updatedTrip.files.find(f => f.id === photoId);
     if (!targetPhoto || !currentUser) return;
 
+    // Create a clean user object to prevent sending extra properties to the database.
+    const commentUser: User = {
+        id: currentUser.id,
+        username: currentUser.username,
+        avatarUrl: currentUser.avatarUrl,
+    };
     const newComment: Comment = {
       id: crypto.randomUUID(),
-      user: currentUser,
+      user: commentUser,
       content,
       createdAt: new Date().toISOString(),
     };

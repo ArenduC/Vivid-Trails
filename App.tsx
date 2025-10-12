@@ -1,4 +1,5 @@
 
+
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { UploadedFile, TripStory, CameraDetails, LocationPin, User, Comment, Rating, Profile, Competition, CompetitionEntry } from './types';
 import { generateTripStory, generateTripVideo, addPhotosToTripStory } from './services/geminiService';
@@ -420,9 +421,15 @@ const TripDetail: React.FC<TripDetailProps> = ({ trip, userTrips, onBack, onUpda
   const handleAddTripComment = (content: string) => {
     if (!currentUser || mode === 'preview') return;
     const updatedTrip = { ...editableTrip };
+    // Create a clean user object to ensure no extra properties are sent to the database.
+    const commentUser: User = {
+        id: currentUser.id,
+        username: currentUser.username,
+        avatarUrl: currentUser.avatarUrl
+    };
     const newComment: Comment = {
       id: crypto.randomUUID(),
-      user: currentUser,
+      user: commentUser,
       content,
       createdAt: new Date().toISOString(),
     };
@@ -937,6 +944,12 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        // A token refresh event is triggered on tab focus. We can ignore it
+        // to prevent the loading screen from appearing unnecessarily.
+        if (event === 'TOKEN_REFRESHED') {
+            return;
+        }
+
         setIsLoading(true);
         setLoadingMessage('Checking authentication...');
         
@@ -961,18 +974,16 @@ const App: React.FC = () => {
           if (profile) {
               const profileUser = { id: profile.id, username: profile.username, avatarUrl: profile.avatar_url };
               setCurrentUser(profileUser);
-              if (!viewState) { // Only set default view if not already viewing something
-                  setViewState({ view: 'profile', userId: user.id });
-              }
+              // Use callback form to prevent stale state. Only set view if it's not already set.
+              setViewState(current => current === null ? { view: 'profile', userId: user.id } : current);
               setAuthError(null);
           } else {
              // Handle new user profile creation
               const newUsername = user.user_metadata?.username || user.email?.split('@')[0] || `user_${user.id.substring(0, 6)}`;
               const newUser = { id: user.id, username: newUsername, avatarUrl: user.user_metadata?.avatar_url || `https://picsum.photos/seed/${newUsername}/100/100` };
               setCurrentUser(newUser);
-              if (!viewState) {
-                  setViewState({ view: 'profile', userId: user.id });
-              }
+               // Use callback form to prevent stale state. Only set view if it's not already set.
+              setViewState(current => current === null ? { view: 'profile', userId: user.id } : current);
           }
           setIsLoading(false);
         };
@@ -1017,22 +1028,38 @@ const App: React.FC = () => {
                 setLoadingMessage('Loading competitions...');
                 const { data, error: compError } = await supabase.from('competitions').select('*, creator:profiles(id, username, avatar_url)').order('created_at', { ascending: false });
                 if (compError) throw compError;
-                const mappedCompetitions: Competition[] = data.map((c: any) => ({
-                    id: c.id,
-                    creatorId: c.creator_id,
-                    title: c.title,
-                    description: c.description,
-                    endDate: c.end_date,
-                    maxEntriesPerUser: c.max_entries_per_user,
-                    createdAt: c.created_at,
-                    creator: Array.isArray(c.creator) ? c.creator[0] : c.creator,
-                }));
+                const mappedCompetitions: Competition[] = data.map((c: any) => {
+                    const rawCreator = Array.isArray(c.creator) ? c.creator[0] : c.creator;
+                    const creatorUser: User = rawCreator ? {
+                        id: rawCreator.id,
+                        username: rawCreator.username,
+                        avatarUrl: rawCreator.avatar_url,
+                    } : { id: 'unknown', username: 'Anonymous', avatarUrl: `https://picsum.photos/seed/anonymous/100/100` };
+                    
+                    return {
+                        id: c.id,
+                        creatorId: c.creator_id,
+                        title: c.title,
+                        description: c.description,
+                        endDate: c.end_date,
+                        maxEntriesPerUser: c.max_entries_per_user,
+                        createdAt: c.created_at,
+                        creator: creatorUser,
+                    };
+                });
                 setCompetitions(mappedCompetitions);
             } else if (viewState.view === 'competition_detail') {
                  setLoadingMessage('Loading competition details...');
                 const { data: compData, error: compError } = await supabase.from('competitions').select('*, creator:profiles(id, username, avatar_url)').eq('id', viewState.id).single();
                 if (compError) throw compError;
-                const creatorObject = Array.isArray(compData.creator) ? compData.creator[0] : compData.creator;
+                
+                const rawCreator = Array.isArray(compData.creator) ? compData.creator[0] : compData.creator;
+                const creatorUser: User = rawCreator ? {
+                    id: rawCreator.id,
+                    username: rawCreator.username,
+                    avatarUrl: rawCreator.avatar_url,
+                } : { id: 'unknown', username: 'Anonymous', avatarUrl: `https://picsum.photos/seed/anonymous/100/100` };
+
                 const mappedCompetition: Competition = {
                     id: compData.id,
                     creatorId: compData.creator_id,
@@ -1041,21 +1068,30 @@ const App: React.FC = () => {
                     endDate: compData.end_date,
                     maxEntriesPerUser: compData.max_entries_per_user,
                     createdAt: compData.created_at,
-                    creator: creatorObject,
+                    creator: creatorUser,
                 };
                 setCurrentCompetition(mappedCompetition);
 
                 const { data: entriesData, error: entriesError } = await supabase.from('competition_entries').select('*, user:profiles(id, username, avatar_url)').eq('competition_id', viewState.id).order('submitted_at', { ascending: false });
                 if (entriesError) throw entriesError;
-                 const mappedEntries: CompetitionEntry[] = entriesData.map((e: any) => ({
-                    id: e.id,
-                    competitionId: e.competition_id,
-                    photoUrl: e.photo_url,
-                    submittedAt: e.submitted_at,
-                    rank: e.rank,
-                    votes: e.votes || [],
-                    user: Array.isArray(e.user) ? e.user[0] : e.user,
-                }));
+                 const mappedEntries: CompetitionEntry[] = entriesData.map((e: any) => {
+                    const rawUser = Array.isArray(e.user) ? e.user[0] : e.user;
+                    const user: User = rawUser ? {
+                        id: rawUser.id,
+                        username: rawUser.username,
+                        avatarUrl: rawUser.avatar_url,
+                    } : { id: 'unknown', username: 'Anonymous', avatarUrl: `https://picsum.photos/seed/anonymous/100/100` };
+
+                    return {
+                        id: e.id,
+                        competitionId: e.competition_id,
+                        photoUrl: e.photo_url,
+                        submittedAt: e.submitted_at,
+                        rank: e.rank,
+                        votes: e.votes || [],
+                        user,
+                    };
+                });
                 setCompetitionEntries(mappedEntries);
             }
         } catch (e) {
