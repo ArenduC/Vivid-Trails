@@ -163,24 +163,24 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ profile, trips, currentUser, 
                 <div className="h-48 md:h-64 bg-slate-800 rounded-2xl overflow-hidden">
                     <img src={profile.bannerUrl} alt={`${profile.username}'s banner`} className="w-full h-full object-cover" />
                 </div>
-                <div className="px-8">
-                    <div className="flex justify-between items-end -mt-16">
+                <div className="px-4 md:px-8">
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-end -mt-12 md:-mt-16">
                         <div className="flex items-end gap-4">
-                            <img src={profile.avatarUrl} alt={profile.username} className="w-32 h-32 rounded-full border-4 border-slate-900 bg-slate-800" />
+                            <img src={profile.avatarUrl} alt={profile.username} className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-slate-900 bg-slate-800" />
                             <div>
-                                <h1 className="text-3xl font-bold">{profile.fullName}</h1>
+                                <h1 className="text-2xl md:text-3xl font-bold">{profile.fullName}</h1>
                                 <p className="text-slate-400">@{profile.username}</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-2 pb-4">
+                        <div className="w-full md:w-auto flex items-center gap-2 mt-4 md:mt-0 md:pb-4">
                             {isOwnProfile ? (
-                                <button onClick={onNewTrip} className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-full transition-transform transform hover:scale-105 shadow-lg">
+                                <button onClick={onNewTrip} className="w-full md:w-auto flex items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-full transition-transform transform hover:scale-105 shadow-lg">
                                     <PlusIcon className="w-5 h-5"/> New Trip
                                 </button>
                             ) : (
                                 <>
-                                    <button className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-full transition-colors">Follow</button>
-                                    <button className="bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded-full transition-colors">Message</button>
+                                    <button className="flex-1 md:flex-initial bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-full transition-colors">Follow</button>
+                                    <button className="flex-1 md:flex-initial bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded-full transition-colors">Message</button>
                                 </>
                             )}
                         </div>
