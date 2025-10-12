@@ -92,7 +92,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin, onRegister, onResendConfirmation, 
     };
 
     const renderFormContent = () => (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 pt-1">
             {isSubmitted ? (
                  <div className="text-center p-4 bg-green-900/50 rounded-lg border border-green-700">
                     <h3 className="font-bold text-lg text-white">Registration Submitted!</h3>
